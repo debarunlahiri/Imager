@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ImageEditActivity">
+
+    <!-- ImageView to display the image -->
+    <FrameLayout
+        android:id="@+id/flImagePreview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/rotationSeekBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/imageViewOriginal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <ImageView
+            android:id="@+id/imageViewCanvas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true" />
+    </FrameLayout>
+
+
+    <!-- SeekBar for free rotation -->
+    <SeekBar
+        android:id="@+id/rotationSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:max="360"
+        app:layout_constraintBottom_toTopOf="@+id/controlsLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/colorPalette"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@+id/flImagePreview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/btnColorWhite"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="@android:color/white"
+            android:elevation="4dp"
+            android:shape="oval" />
+
+        <Button
+            android:id="@+id/btnColorBlack"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="@android:color/black"
+            android:elevation="4dp"
+            android:shape="oval" />
+
+        <Button
+            android:id="@+id/btnColorRed"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:elevation="4dp"
+            android:shape="oval" />
+
+        <Button
+            android:id="@+id/btnColorGreen"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="@android:color/holo_green_light"
+            android:elevation="4dp"
+            android:shape="oval" />
+
+        <Button
+            android:id="@+id/btnColorBlue"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:elevation="4dp"
+            android:shape="oval" />
+
+        <Button
+            android:id="@+id/btnColorGray"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="@android:color/darker_gray"
+            android:elevation="4dp"
+            android:shape="oval" />
+    </LinearLayout>
+
+    <!-- Controls layout -->
+    <LinearLayout
+        android:id="@+id/controlsLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Add Background Button -->
+        <Button
+            android:id="@+id/btnAddBackground"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Canvas" />
+
+        <!-- Rotate Button -->
+        <Button
+            android:id="@+id/btnRotate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rotate 90°" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
