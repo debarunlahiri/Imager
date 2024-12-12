@@ -4,4 +4,5 @@
     <external-path
         name="external_files"
         path="Android/data/com.summitcodeworks.imager/files/" />
+
 </paths>

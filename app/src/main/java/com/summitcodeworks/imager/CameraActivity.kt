@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
@@ -130,17 +132,35 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun saveImageToPrivateFolder(bytes: ByteArray) {
-        // Generate a unique file name based on the current timestamp
         val fileName = "captured_image_${System.currentTimeMillis()}.jpg"
         val file = File(getExternalFilesDir(null), fileName)
 
-        // Save the image bytes to the private folder
-        FileOutputStream(file).use { it.write(bytes) }
+        // Get the camera's sensor orientation and device rotation
+        val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+        val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
+        val rotation = windowManager.defaultDisplay.rotation
 
-        // Convert the saved file to a Uri using FileProvider (for sharing with other apps)
+        // Rotate the image based on the device's orientation and the camera's sensor orientation
+        val matrix = android.graphics.Matrix()
+        when (rotation) {
+            Surface.ROTATION_0 -> matrix.postRotate(sensorOrientation.toFloat())
+            Surface.ROTATION_90 -> matrix.postRotate((sensorOrientation + 90) % 360.toFloat())
+            Surface.ROTATION_180 -> matrix.postRotate((sensorOrientation + 180) % 360.toFloat())
+            Surface.ROTATION_270 -> matrix.postRotate((sensorOrientation + 270) % 360.toFloat())
+        }
+
+        // Rotate the captured image and save it
+        val rotatedBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            .let { Bitmap.createBitmap(it, 0, 0, it.width, it.height, matrix, true) }
+
+        // Save the rotated image to the file
+        FileOutputStream(file).use { outputStream ->
+            rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        }
+
+        // Convert the saved file to a Uri using FileProvider
         val imageUri = FileProvider.getUriForFile(this, "com.summitcodeworks.imager.fileprovider", file)
 
-        // Log for debugging
         Log.d("SaveImage", "File saved at: ${file.absolutePath}")
         Log.d("SaveImage", "File URI: $imageUri")
 
@@ -148,19 +168,13 @@ class CameraActivity : AppCompatActivity() {
         runOnUiThread {
             Toast.makeText(this, "Image saved to ${file.absolutePath}", Toast.LENGTH_SHORT).show()
 
-            // Convert the file to a byte array for sharing if needed
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            FileInputStream(file).use { fileInputStream ->
-                fileInputStream.copyTo(byteArrayOutputStream)
-            }
-            val byteArray = byteArrayOutputStream.toByteArray()
-
-            // Share the image as a byte array or Uri with another activity
+            // Share the image with another activity
             val intent = Intent(this, ImageProcessActivity::class.java)
             intent.putExtra("imageUri", imageUri.toString())  // Pass the Uri
             startActivity(intent)
         }
     }
+
 
 
 

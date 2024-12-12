@@ -100,11 +100,13 @@ class ImagePreviewActivity : AppCompatActivity() {
     }
 
     private fun shareImage(imageUri: Uri) {
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/*"
-            putExtra(Intent.EXTRA_STREAM, imageUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        startActivity(Intent.createChooser(intent, "Share Image"))
+//        val intent = Intent(Intent.ACTION_SEND).apply {
+//            type = "image/*"
+//            putExtra(Intent.EXTRA_STREAM, imageUri)
+//            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+//        }
+//        startActivity(Intent.createChooser(intent, "Share Image"))
+
+        Toast.makeText(this, "Functionality not supported right now", Toast.LENGTH_SHORT).show()
     }
 }
