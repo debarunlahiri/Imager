@@ -17,6 +17,10 @@ class CropView @JvmOverloads constructor(
     private var cropRect = RectF()
     private var handleRadius = 20f
     private var selectedHandle: Int = HANDLE_NONE
+    private var isMoving = false
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+
     private val paint = Paint().apply {
         color = Color.WHITE
         style = Paint.Style.STROKE
@@ -81,24 +85,54 @@ class CropView @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 selectedHandle = getHandleAtPoint(x, y)
-                return selectedHandle != HANDLE_NONE
+                if (selectedHandle == HANDLE_NONE && isPointInsideCropRect(x, y)) {
+                    isMoving = true
+                    lastTouchX = x
+                    lastTouchY = y
+                }
+                return selectedHandle != HANDLE_NONE || isMoving
             }
             MotionEvent.ACTION_MOVE -> {
                 if (selectedHandle != HANDLE_NONE) {
                     updateCropRect(x, y)
                     invalidate()
                     return true
+                } else if (isMoving) {
+                    moveRect(x - lastTouchX, y - lastTouchY)
+                    lastTouchX = x
+                    lastTouchY = y
+                    invalidate()
+                    return true
                 }
             }
             MotionEvent.ACTION_UP -> {
-                if (selectedHandle != HANDLE_NONE) {
+                if (selectedHandle != HANDLE_NONE || isMoving) {
                     selectedHandle = HANDLE_NONE
+                    isMoving = false
                     onCropChangeListener?.invoke(cropRect)
                     return true
                 }
             }
         }
         return false
+    }
+
+    private fun isPointInsideCropRect(x: Float, y: Float): Boolean {
+        return cropRect.contains(x, y)
+    }
+
+    private fun moveRect(deltaX: Float, deltaY: Float) {
+        // Calculate new positions
+        val newLeft = cropRect.left + deltaX
+        val newTop = cropRect.top + deltaY
+        val newRight = cropRect.right + deltaX
+        val newBottom = cropRect.bottom + deltaY
+
+        // Check boundaries
+        if (newLeft >= 0 && newRight <= width &&
+            newTop >= 0 && newBottom <= height) {
+            cropRect.offset(deltaX, deltaY)
+        }
     }
 
     private fun getHandleAtPoint(x: Float, y: Float): Int {

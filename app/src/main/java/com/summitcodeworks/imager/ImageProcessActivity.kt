@@ -10,27 +10,34 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.GridLayoutManager
-import com.summitcodeworks.imager.databinding.ActivityProcessImageBinding
+import com.summitcodeworks.imager.databinding.ActivityImageProcessBinding
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.Core
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.MatOfPoint
+import org.opencv.core.MatOfPoint2f
+import org.opencv.core.Point
+import org.opencv.core.Rect
 import org.opencv.core.Scalar
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 
-class ProcessImageActivity : AppCompatActivity() {
+class ImageProcessActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityProcessImageBinding
+    private lateinit var binding: ActivityImageProcessBinding
 
     private lateinit var mContext: Context
 
@@ -41,7 +48,7 @@ class ProcessImageActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityProcessImageBinding.inflate(layoutInflater)
+        binding = ActivityImageProcessBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         mContext = this
@@ -87,10 +94,6 @@ class ProcessImageActivity : AppCompatActivity() {
                 binding.rvSegmentedImage.layoutManager = GridLayoutManager(this, 3)
             }
         }
-
-
-
-
     }
 
     fun processAndCountRedStrips(inputBitmap: Bitmap): List<RedStripData> {
@@ -221,6 +224,50 @@ class ProcessImageActivity : AppCompatActivity() {
             binding.tbProcessImage.navigationIcon = wrappedIcon
         }
     }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.image_process_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_save_image -> {
+                saveImagesFromListToPrivateFolder()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun saveImagesFromListToPrivateFolder() {
+        if (::redStripDataList.isInitialized) {
+            val privateFolder = getExternalFilesDir(null) // Use getFilesDir() for internal storage
+            if (privateFolder != null) {
+                redStripDataList.forEach { redStripData ->
+                    val fileName = "red_strip_image_${System.currentTimeMillis()}_${redStripData.count}.jpg"
+                    val imageFile = File(privateFolder, fileName)
+
+                    try {
+                        FileOutputStream(imageFile).use { outputStream ->
+                            // Compress the Bitmap and write to file
+                            redStripData.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                        }
+//                        Toast.makeText(this, "Saved: $fileName", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(this, "Failed to save: $fileName", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Private folder not found", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "No data to save", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
 
 }

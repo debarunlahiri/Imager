@@ -8,35 +8,77 @@
     android:background="@color/black"
     tools:context=".ImagePreviewActivity">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cvImagePreviewBack"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="#37000000"
-        app:cardCornerRadius="22dp"
-        app:cardElevation="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/ivImagePreviewBack"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvImagePreviewBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="#37000000"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/ivImagePreviewBack"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                app:srcCompat="@drawable/baseline_arrow_back_24"
+                app:tint="@color/white" />
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/bEditImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            app:srcCompat="@drawable/baseline_arrow_back_24"
-            app:tint="@color/white" />
-    </androidx.cardview.widget.CardView>
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="#00FFFFFF"
+            android:text="Edit"
+            app:cornerRadius="5dp"
+            app:icon="@drawable/baseline_edit_24"
+            app:layout_constraintEnd_toStartOf="@+id/bShareImage"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp" />
+
+        <Button
+            android:id="@+id/bShareImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="#00FFFFFF"
+            android:text="Share"
+            app:cornerRadius="5dp"
+            app:icon="@drawable/outline_share_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <com.jsibbold.zoomage.ZoomageView
         android:id="@+id/myZoomageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
         app:zoomage_animateOnReset="true"
         app:zoomage_autoCenter="true"
         app:zoomage_autoResetMode="UNDER"
@@ -46,19 +88,6 @@
         app:zoomage_translatable="true"
         app:zoomage_zoomable="true" />
 
-    <Button
-        android:id="@+id/bEditImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:backgroundTint="#00FFFFFF"
-        android:text="Edit Image"
-        app:cornerRadius="5dp"
-        app:icon="@drawable/baseline_edit_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:strokeColor="@color/white"
-        app:strokeWidth="1dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.RectF
+import android.net.Uri
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -41,9 +42,19 @@ class ImageEditActivity : AppCompatActivity() {
         binding = ActivityImageEditBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Load the image passed from the previous activity
+        // Load the image passed from the previous activity (handle both imageBitmap and imageUri)
         val byteArray = intent.getByteArrayExtra("imageBitmap")
-        originalBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
+        val imageUriString = intent.getStringExtra("imageUri")
+
+        if (byteArray != null) {
+            // Handle byte array (imageBitmap)
+            originalBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        } else if (imageUriString != null) {
+            // Handle URI (imageUri)
+            val imageUri = Uri.parse(imageUriString)
+            originalBitmap = contentResolver.openInputStream(imageUri)?.use { BitmapFactory.decodeStream(it) }
+        }
+
         bitmap = originalBitmap?.copy(Bitmap.Config.ARGB_8888, true)
 
         Glide.with(this).load(bitmap).into(binding.imageViewOriginal)
@@ -236,7 +247,13 @@ class ImageEditActivity : AppCompatActivity() {
             val transformedBitmap = Bitmap.createBitmap(
                 bmp, 0, 0, bmp.width, bmp.height, matrix, true
             )
-            binding.imageViewCanvas.setImageBitmap(transformedBitmap)
+
+            // Set the transformed bitmap to the ImageView
+            if (isAddingCanvas) {
+                binding.imageViewCanvas.setImageBitmap(transformedBitmap)
+            } else {
+                binding.imageViewOriginal.setImageBitmap(transformedBitmap)
+            }
         }
     }
 

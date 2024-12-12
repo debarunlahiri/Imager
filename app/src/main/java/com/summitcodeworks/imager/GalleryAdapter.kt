@@ -25,12 +25,10 @@ class GalleryAdapter(val imageUris: List<Uri>, val mContext: Context, val onItem
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val imageUri = imageUris[position]
-        holder.binding.ivImage.setImageURI(imageUri)
         Glide.with(mContext)
             .load(imageUri)
-            .into(holder.binding.ivImage)
-
-        holder.binding.ivImage.setOnClickListener {
+            .into(holder.binding.ivRedStrip)
+        holder.binding.flRedStrip.setOnClickListener {
             onItemClick(imageUri)
         }
 

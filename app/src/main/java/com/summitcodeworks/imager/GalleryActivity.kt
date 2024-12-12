@@ -3,6 +3,7 @@ package com.summitcodeworks.imager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -19,23 +20,17 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.summitcodeworks.imager.databinding.ActivityGalleryBinding
+import java.io.ByteArrayOutputStream
 
 class GalleryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityGalleryBinding
     private lateinit var mContext: Context
-    private val imageUris = mutableListOf<Uri>()
     private lateinit var galleryAdapter: GalleryAdapter
     private var isFromGallery: Boolean = false
 
     // Register activity result launcher for picking images
-    private val pickImages = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
-        uris?.let {
-            imageUris.clear()
-            imageUris.addAll(uris)
-            galleryAdapter.notifyDataSetChanged()
-        }
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,17 +47,19 @@ class GalleryActivity : AppCompatActivity() {
             binding.bProcessImage.visibility = View.VISIBLE
         }
 
+        val imageUris = loadImagesFromPrivateFolder()
+
         galleryAdapter = GalleryAdapter(imageUris, mContext) { uri ->
-            Toast.makeText(this, "Selected: $uri", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, "Selected: $uri", Toast.LENGTH_SHORT).show()
+            val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
+            imagePreviewIntent.putExtra("imageUri", uri.toString())
+            startActivity(imagePreviewIntent)
         }
         binding.rvGallery.adapter = galleryAdapter
-
-        // Set the LayoutManager for RecyclerView
         binding.rvGallery.layoutManager = GridLayoutManager(this, 3)
 
         setupToolbar()
         checkPermissions()
-        setupImagePicker()
         setupPagination()
 
 
@@ -70,9 +67,7 @@ class GalleryActivity : AppCompatActivity() {
             // Process the selected image
             // For example, you can pass the selected image URI to another activity
             // using an Intent
-            val intent = Intent(this, ProcessImageActivity::class.java)
-            intent.putExtra("imageUri", imageUris[0].toString())
-            startActivity(intent)
+
         }
     }
 
@@ -109,9 +104,21 @@ class GalleryActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupImagePicker() {
-        // Set up the button or any view that triggers the image picker
-        pickImages.launch("image/*")
+    private fun loadImagesFromPrivateFolder(): List<Uri> {
+        val imageUris = mutableListOf<Uri>()
+        val imageFolder = getExternalFilesDir(null) // Replace with getFilesDir() for internal storage
+
+        imageFolder?.listFiles()?.forEach { file ->
+            if (file.isFile && isImageFile(file.name)) {
+                imageUris.add(Uri.fromFile(file))
+            }
+        }
+        return imageUris
+    }
+
+    private fun isImageFile(fileName: String): Boolean {
+        val extensions = listOf("jpg", "jpeg", "png", "gif", "bmp")
+        return extensions.any { fileName.endsWith(it, ignoreCase = true) }
     }
 
     private fun checkPermissions() {
