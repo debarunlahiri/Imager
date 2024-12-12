@@ -26,6 +26,7 @@ class GalleryActivity : AppCompatActivity() {
     private lateinit var mContext: Context
     private val imageUris = mutableListOf<Uri>()
     private lateinit var galleryAdapter: GalleryAdapter
+    private var isFromGallery: Boolean = false
 
     // Register activity result launcher for picking images
     private val pickImages = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
@@ -42,6 +43,14 @@ class GalleryActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         mContext = this
+
+        isFromGallery = intent.getBooleanExtra("isFromGallery", false)
+
+        if (isFromGallery) {
+            binding.bProcessImage.visibility = View.GONE
+        } else {
+            binding.bProcessImage.visibility = View.VISIBLE
+        }
 
         galleryAdapter = GalleryAdapter(imageUris, mContext) { uri ->
             Toast.makeText(this, "Selected: $uri", Toast.LENGTH_SHORT).show()
@@ -69,7 +78,11 @@ class GalleryActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         binding.tbGallery.visibility = View.VISIBLE
-        binding.tbGallery.title = "Gallery"
+        if (isFromGallery) {
+            binding.tbGallery.title = "Gallery"
+        } else {
+            binding.tbGallery.title = "Select Image"
+        }
 
         setSupportActionBar(binding.tbGallery)
 

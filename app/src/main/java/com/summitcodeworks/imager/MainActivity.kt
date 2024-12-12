@@ -29,6 +29,13 @@ class MainActivity : AppCompatActivity() {
 
         binding.bChooseFIle.setOnClickListener {
             val galleryIntent = Intent(this, GalleryActivity::class.java)
+            galleryIntent.putExtra("isFromGallery", false)
+            startActivity(galleryIntent)
+        }
+
+        binding.bGallery.setOnClickListener {
+            val galleryIntent = Intent(this, GalleryActivity::class.java)
+            galleryIntent.putExtra("isFromGallery", true)
             startActivity(galleryIntent)
         }
 

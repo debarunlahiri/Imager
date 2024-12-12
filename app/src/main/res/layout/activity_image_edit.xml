@@ -42,8 +42,8 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
-        android:id="@+id/colorPalette"
-        android:layout_width="wrap_content"
+        android:id="@+id/llColorPalette"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:gravity="center"
@@ -56,6 +56,8 @@
             android:id="@+id/btnColorWhite"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:backgroundTint="@android:color/white"
             android:elevation="4dp"
             android:shape="oval" />
@@ -64,6 +66,8 @@
             android:id="@+id/btnColorBlack"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:backgroundTint="@android:color/black"
             android:elevation="4dp"
             android:shape="oval" />
@@ -72,6 +76,8 @@
             android:id="@+id/btnColorRed"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:backgroundTint="@android:color/holo_red_light"
             android:elevation="4dp"
             android:shape="oval" />
@@ -80,6 +86,8 @@
             android:id="@+id/btnColorGreen"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:backgroundTint="@android:color/holo_green_light"
             android:elevation="4dp"
             android:shape="oval" />
@@ -88,6 +96,8 @@
             android:id="@+id/btnColorBlue"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:backgroundTint="@android:color/holo_blue_light"
             android:elevation="4dp"
             android:shape="oval" />
@@ -96,6 +106,8 @@
             android:id="@+id/btnColorGray"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:backgroundTint="@android:color/darker_gray"
             android:elevation="4dp"
             android:shape="oval" />
@@ -113,10 +125,23 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Add Background Button -->
+
+        <Button
+            android:id="@+id/btnCrop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:backgroundTint="@color/neon"
+            android:text="Crop" />
+
         <Button
             android:id="@+id/btnAddBackground"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:backgroundTint="@color/neon"
             android:text="Add Canvas" />
 
         <!-- Rotate Button -->
@@ -124,6 +149,9 @@
             android:id="@+id/btnRotate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:backgroundTint="@color/neon"
             android:text="Rotate 90°" />
     </LinearLayout>
 

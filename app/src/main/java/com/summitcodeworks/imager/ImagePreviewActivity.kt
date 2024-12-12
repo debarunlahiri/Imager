@@ -41,6 +41,10 @@ class ImagePreviewActivity : AppCompatActivity() {
             finish()
         }
 
+        binding.ivImagePreviewBack.setOnClickListener {
+            finish()
+        }
+
         binding.bEditImage.setOnClickListener {
             val intent = Intent(mContext, ImageEditActivity::class.java)
             intent.putExtra("imageBitmap", byteArray)

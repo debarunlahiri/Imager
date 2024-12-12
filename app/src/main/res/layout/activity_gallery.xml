@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".GalleryActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -35,6 +36,7 @@
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:text="Process Image"
+        android:backgroundTint="@color/neon"
         app:cornerRadius="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
