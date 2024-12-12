@@ -37,7 +37,7 @@ class ImageEditActivity : AppCompatActivity() {
         val byteArray = intent.getByteArrayExtra("imageBitmap")
         bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
         Glide.with(this).load(bitmap).into(
-            binding.imageView
+            binding.imageViewOriginal
         )
 
         // Initialize ScaleGestureDetector
@@ -57,7 +57,7 @@ class ImageEditActivity : AppCompatActivity() {
                 if (isAddingCanvas) {
                     // Update canvas with the new color
                     canvasBitmap = updateCanvasColor(currentBitmap, 800, 800, canvasColor)
-                    binding.imageView.setImageBitmap(canvasBitmap)
+                    binding.imageViewCanvas.setImageBitmap(canvasBitmap)
                     bitmap = canvasBitmap // Update the bitmap reference
                     Toast.makeText(this, "Canvas color updated", Toast.LENGTH_SHORT).show()
                 } else {
@@ -68,7 +68,7 @@ class ImageEditActivity : AppCompatActivity() {
                         800,
                         canvasColor
                     )
-                    binding.imageView.setImageBitmap(canvasBitmap)
+                    binding.imageViewCanvas.setImageBitmap(canvasBitmap)
                     bitmap = canvasBitmap // Update the bitmap reference
                     isAddingCanvas = true
                     Toast.makeText(this, "Canvas added", Toast.LENGTH_SHORT).show()
@@ -91,7 +91,7 @@ class ImageEditActivity : AppCompatActivity() {
         })
 
         // Handle touch events for scaling and dragging
-        binding!!.imageView.setOnTouchListener { v, event ->
+        binding!!.imageViewOriginal.setOnTouchListener { v, event ->
             scaleGestureDetector!!.onTouchEvent(event)
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -180,7 +180,7 @@ class ImageEditActivity : AppCompatActivity() {
             val transformedBitmap = Bitmap.createBitmap(
                 bitmap!!, 0, 0, bitmap!!.width, bitmap!!.height, matrix, true
             )
-            binding!!.imageView.setImageBitmap(transformedBitmap)
+            binding!!.imageViewCanvas.setImageBitmap(transformedBitmap)
         }
     }
 
