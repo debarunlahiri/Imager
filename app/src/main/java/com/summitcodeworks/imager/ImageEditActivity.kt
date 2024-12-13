@@ -19,6 +19,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.summitcodeworks.imager.databinding.ActivityImageEditBinding
+import java.io.File
+import java.io.FileOutputStream
 
 class ImageEditActivity : AppCompatActivity() {
     private lateinit var binding: ActivityImageEditBinding
@@ -125,6 +127,10 @@ class ImageEditActivity : AppCompatActivity() {
             } else {
                 applyCrop()
             }
+        }
+
+        binding.ibImageEditSave.setOnClickListener {
+            saveCanvasWithImage()
         }
 
         setupColorListeners()
@@ -281,4 +287,43 @@ class ImageEditActivity : AppCompatActivity() {
             return true
         }
     }
+
+    private fun saveCanvasWithImage() {
+        val currentBitmap = if (isAddingCanvas) canvasBitmap else originalBitmap
+
+        if (currentBitmap != null) {
+            try {
+                // Create a merged bitmap with the canvas and image
+                val mergedBitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(mergedBitmap)
+
+                // Draw the background canvas
+                canvas.drawColor(canvasColor)
+
+                // Draw the image centered on the canvas
+                canvas.drawBitmap(
+                    currentBitmap,
+                    (canvasWidth - currentBitmap.width) / 2f,
+                    (canvasHeight - currentBitmap.height) / 2f,
+                    null
+                )
+
+                // Save the merged bitmap to a file
+                val fileName = "merged_image_${System.currentTimeMillis()}.png"
+                val file = File(applicationContext.filesDir, fileName)
+
+                FileOutputStream(file).use { fos ->
+                    mergedBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                }
+
+                Toast.makeText(this, "Image saved: ${file.absolutePath}", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Failed to save image: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "No image to save", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 }

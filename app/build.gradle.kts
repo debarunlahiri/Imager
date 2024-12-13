@@ -72,4 +72,7 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
     implementation("com.vanniktech:android-image-cropper:4.6.0")
 
+    implementation("com.google.mlkit:text-recognition:16.0.0")
+    implementation("com.rmtheis:tess-two:9.1.0")
+
 }
