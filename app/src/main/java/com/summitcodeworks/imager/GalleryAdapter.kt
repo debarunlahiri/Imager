@@ -8,8 +8,9 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.summitcodeworks.imager.databinding.ItemListGalleryLayoutBinding
+import java.io.File
 
-class GalleryAdapter(val imageUris: List<Uri>, val mContext: Context, val onItemClick: (Uri) -> Unit): RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
+class GalleryAdapter(val imageUris: List<Uri>, val mContext: Context, val onGalleryListener: OnGalleryListener): RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemListGalleryLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
     }
@@ -29,8 +30,17 @@ class GalleryAdapter(val imageUris: List<Uri>, val mContext: Context, val onItem
             .load(imageUri)
             .into(holder.binding.ivRedStrip)
         holder.binding.flRedStrip.setOnClickListener {
-            onItemClick(imageUri)
+            onGalleryListener.onGalleryClick(imageUri)
         }
 
+        holder.binding.ibImageDelete.setOnClickListener {
+            // Delete image
+            onGalleryListener.onGalleryDelete(imageUri)
+        }
+    }
+
+    interface OnGalleryListener {
+        fun onGalleryClick(imageUri: Uri)
+        fun onGalleryDelete(imageUri: Uri)
     }
 }

@@ -28,6 +28,7 @@ import org.opencv.core.MatOfPoint
 import org.opencv.core.MatOfPoint2f
 import org.opencv.core.Point
 import org.opencv.core.Rect
+import org.opencv.core.RotatedRect
 import org.opencv.core.Scalar
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
@@ -44,7 +45,7 @@ class ImageProcessActivity : AppCompatActivity() {
     private lateinit var bitmap: Bitmap
 
     private var redStripData: RedStripData? = null
-    private lateinit var redStripDataList: List<RedStripData>
+    private lateinit var redStripDataList: MutableList<RedStripData>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,10 +58,9 @@ class ImageProcessActivity : AppCompatActivity() {
 
         if (!OpenCVLoader.initDebug()) {
             Log.e("OpenCV", "OpenCV initialization failed")
-            Toast.makeText(this, "OpenCV initialization failed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Image failed to process. Please try again later.", Toast.LENGTH_SHORT).show()
         } else {
             Log.d("OpenCV", "OpenCV initialized successfully")
-            Toast.makeText(this, "OpenCV initialized successfully", Toast.LENGTH_SHORT).show()
 
             val imageUriString = intent.getStringExtra("imageUri")
             if (imageUriString != null) {
@@ -89,6 +89,16 @@ class ImageProcessActivity : AppCompatActivity() {
                         imagePreviewIntent.putExtra("imageBitmap", byteArray)
                         startActivity(imagePreviewIntent)
                     }
+
+                    override fun onRedStripAdapterDelete(redStripData: RedStripData) {
+                        try {
+                            redStripDataList.remove(redStripData) // Assuming you have a list named `redStripList`
+                            Toast.makeText(mContext, "Image and deleted successfully.", Toast.LENGTH_SHORT).show()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            Toast.makeText(mContext, "An error occurred: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 })
                 binding.rvSegmentedImage.adapter = redStripAdapter
                 binding.rvSegmentedImage.layoutManager = GridLayoutManager(this, 3)
@@ -96,13 +106,13 @@ class ImageProcessActivity : AppCompatActivity() {
         }
     }
 
-    fun processAndCountRedStrips(inputBitmap: Bitmap): List<RedStripData> {
+    fun processAndCountRedStrips(inputBitmap: Bitmap): MutableList<RedStripData> {
         val resultList = mutableListOf<RedStripData>()
 
         if (inputBitmap.width <= 0 || inputBitmap.height <= 0) {
             Log.e("ProcessImage", "Invalid Bitmap input: Width or Height is 0")
             Toast.makeText(this, "Invalid Bitmap input", Toast.LENGTH_SHORT).show()
-            return resultList // Return empty list if invalid input
+            return resultList
         }
 
         Log.d("ProcessImage", "Input image dimensions: ${inputBitmap.width}x${inputBitmap.height}")
@@ -115,26 +125,21 @@ class ImageProcessActivity : AppCompatActivity() {
         val hsv = Mat()
         Imgproc.cvtColor(src, hsv, Imgproc.COLOR_RGB2HSV)
 
-        // Adjusted HSV range for red color
+        // Red color range detection (same as before)
         val lowerRed1 = Scalar(0.0, 70.0, 50.0)
         val upperRed1 = Scalar(10.0, 255.0, 255.0)
         val lowerRed2 = Scalar(160.0, 70.0, 50.0)
         val upperRed2 = Scalar(180.0, 255.0, 255.0)
 
-        // Create masks for red color
         val mask1 = Mat()
         val mask2 = Mat()
         Core.inRange(hsv, lowerRed1, upperRed1, mask1)
         Core.inRange(hsv, lowerRed2, upperRed2, mask2)
-
-        // Combine both masks
         val redMask = Mat()
         Core.add(mask1, mask2, redMask)
 
-        // Apply Gaussian blur
+        // Enhanced preprocessing
         Imgproc.GaussianBlur(redMask, redMask, Size(3.0, 3.0), 0.0)
-
-        // Morphological operations
         val kernel = Mat.ones(2, 2, CvType.CV_8U)
         Imgproc.erode(redMask, redMask, kernel)
         Imgproc.dilate(redMask, redMask, kernel)
@@ -144,47 +149,89 @@ class ImageProcessActivity : AppCompatActivity() {
         val hierarchy = Mat()
         Imgproc.findContours(redMask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
 
-        Log.d("ProcessImage", "Found ${contours.size} contours before filtering")
-
-        // Reduced minimum contour area
+        // Filter and process contours
         val minContourArea = 100.0
-        val filteredContours = contours.filter {
-            val area = Imgproc.contourArea(it)
-            Log.d("ProcessImage", "Contour area: $area")
-            area > minContourArea
-        }
+        val filteredContours = contours.filter { Imgproc.contourArea(it) > minContourArea }
 
-        Log.d("ProcessImage", "Found ${filteredContours.size} contours after filtering")
-
-        if (filteredContours.isEmpty()) {
-            Log.e("ProcessImage", "No red strips found")
-            Toast.makeText(this, "No red strips found", Toast.LENGTH_SHORT).show()
-            return resultList // Return empty list if no red strips are found
-        }
-
-        // Process each strip and store in the result list
         filteredContours.forEach { contour ->
-            // Get the bounding rectangle for each contour
+            // Find the minimum area rectangle
+            val points = MatOfPoint2f()
+            contour.convertTo(points, CvType.CV_32F)
+            val minAreaRect = Imgproc.minAreaRect(points)
+
+            // Get the angle of rotation
+            var angle = minAreaRect.angle
+
+            // Adjust angle interpretation
+            if (minAreaRect.size.width < minAreaRect.size.height) {
+                angle += 90
+            }
+
+            // Create rotation matrix
+            val rotationMatrix = Imgproc.getRotationMatrix2D(
+                minAreaRect.center,
+                angle,
+                1.0
+            )
+
+            // Get the bounding rectangle for the original contour
             val rect = Imgproc.boundingRect(contour)
 
-            // Crop the red strip
-            val strip = Mat(src, rect)
+            // Create a mask for this specific strip
+            val stripMask = Mat.zeros(src.size(), CvType.CV_8UC1)
+            Imgproc.drawContours(
+                stripMask,
+                listOf(contour),
+                0,
+                Scalar(255.0),
+                -1
+            )
+
+            // Extract the strip using the mask
+            val strip = Mat()
+            src.copyTo(strip, stripMask)
+
+            // Rotate the strip to horizontal
+            val rotatedStrip = Mat()
+            Imgproc.warpAffine(
+                strip,
+                rotatedStrip,
+                rotationMatrix,
+                src.size(),
+                Imgproc.INTER_LINEAR,
+                Core.BORDER_CONSTANT,
+                Scalar(255.0, 255.0, 255.0)
+            )
+
+            // Get the new bounding rectangle after rotation
+            val rotatedRect = Imgproc.boundingRect(MatOfPoint(*getRotatedRectPoints(minAreaRect)))
+
+            // Crop the rotated strip
+            val croppedStrip = Mat(rotatedStrip, rotatedRect)
 
             // Resize to standard height
             val resizedStrip = Mat()
-            Imgproc.resize(strip, resizedStrip, Size(src.width().toDouble(), 100.0))
+            Imgproc.resize(croppedStrip, resizedStrip, Size(src.width().toDouble(), 100.0))
 
-            // Convert the result strip to Bitmap
-            val outputBitmap = Bitmap.createBitmap(resizedStrip.cols(), resizedStrip.rows(), Bitmap.Config.ARGB_8888)
+            // Convert to Bitmap
+            val outputBitmap = Bitmap.createBitmap(
+                resizedStrip.cols(),
+                resizedStrip.rows(),
+                Bitmap.Config.ARGB_8888
+            )
             Utils.matToBitmap(resizedStrip, outputBitmap)
 
-            // Add the red strip data to the list
-            resultList.add(RedStripData(filteredContours.size, outputBitmap))
+            resultList.add(RedStripData(filteredContours.size, outputBitmap, angle))
         }
 
-        Log.d("ProcessImage", "Processing completed. Found ${resultList.size} strips")
-
         return resultList
+    }
+
+    // Helper function to get rotated rectangle points
+    private fun getRotatedRectPoints(rect: RotatedRect): Array<Point> {
+        val points = Array(4) { Point() }
+        rect.points(points)
+        return points
     }
 
 

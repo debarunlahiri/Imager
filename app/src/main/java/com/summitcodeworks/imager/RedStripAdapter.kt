@@ -29,9 +29,14 @@ class RedStripAdapter(private val redStripDataList: List<RedStripData>, private 
         holder.binding.flRedStrip.setOnClickListener {
             onRedStripAdapterListener.onRedStripAdapterClick(redStripData)
         }
+        holder.binding.ibRedStripImageDelete.setOnClickListener {
+            onRedStripAdapterListener.onRedStripAdapterDelete(redStripData)
+            notifyItemRemoved(position)
+        }
     }
 
     interface OnRedStripAdapterListener {
         fun onRedStripAdapterClick(redStripData: RedStripData)
+        fun onRedStripAdapterDelete(redStripData: RedStripData)
     }
 }

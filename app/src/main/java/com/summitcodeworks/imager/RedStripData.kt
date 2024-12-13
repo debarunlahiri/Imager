@@ -4,5 +4,6 @@ import android.graphics.Bitmap
 
 data class RedStripData(
     val count: Int,
-    val bitmap: Bitmap
+    val bitmap: Bitmap,
+    val rotationAngle: Double
 )

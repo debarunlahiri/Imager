@@ -21,12 +21,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.summitcodeworks.imager.databinding.ActivityGalleryBinding
 import java.io.ByteArrayOutputStream
+import java.io.File
 
-class GalleryActivity : AppCompatActivity() {
+class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
 
     private lateinit var binding: ActivityGalleryBinding
     private lateinit var mContext: Context
     private lateinit var galleryAdapter: GalleryAdapter
+    private lateinit var imageList: MutableList<Uri>
     private var isFromGallery: Boolean = false
 
     // Register activity result launcher for picking images
@@ -47,14 +49,9 @@ class GalleryActivity : AppCompatActivity() {
             binding.bProcessImage.visibility = View.VISIBLE
         }
 
-        val imageUris = loadImagesFromPrivateFolder()
+        imageList = loadImagesFromPrivateFolder()
 
-        galleryAdapter = GalleryAdapter(imageUris, mContext) { uri ->
-//            Toast.makeText(this, "Selected: $uri", Toast.LENGTH_SHORT).show()
-            val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
-            imagePreviewIntent.putExtra("imageUri", uri.toString())
-            startActivity(imagePreviewIntent)
-        }
+        galleryAdapter = GalleryAdapter(imageList, mContext, this)
         binding.rvGallery.adapter = galleryAdapter
         binding.rvGallery.layoutManager = GridLayoutManager(this, 3)
 
@@ -104,7 +101,7 @@ class GalleryActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadImagesFromPrivateFolder(): List<Uri> {
+    private fun loadImagesFromPrivateFolder(): MutableList<Uri> {
         val imageUris = mutableListOf<Uri>()
         val imageFolder = getExternalFilesDir(null) // Replace with getFilesDir() for internal storage
 
@@ -169,4 +166,35 @@ class GalleryActivity : AppCompatActivity() {
             binding.tbGallery.navigationIcon = wrappedIcon
         }
     }
+
+    override fun onGalleryClick(imageUri: Uri) {
+        val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
+        imagePreviewIntent.putExtra("imageUri", imageUri.toString())
+        startActivity(imagePreviewIntent)
+    }
+
+    override fun onGalleryDelete(imageUri: Uri) {
+        try {
+            // Convert Uri to File
+            val file = File(imageUri.path ?: "")
+            // Check if file exists and delete it
+            if (file.exists()) {
+                val isDeleted = file.delete()
+                if (isDeleted) {
+                    // If successfully deleted, remove it from the list
+                    imageList.remove(imageUri)
+                    galleryAdapter.notifyItemRemoved(imageList.indexOf(imageUri))
+                    Toast.makeText(mContext, "Image deleted successfully.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(mContext, "Failed to delete the image.", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(mContext, "File does not exist.", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(mContext, "An error occurred: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 }
