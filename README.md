@@ -1,8 +1,8 @@
+# Imager - Powering Images with AI and Processing
+
 <p align="center">
   <img src="https://github.com/debarunlahiri/Imager/blob/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="App Icon" style="height: 150px;">
 </p>
-
-# Imager - Powering Images with AI and Processing
 
 Imager is a cutting-edge application designed to unlock the potential of your images. It combines the power of **OpenCV** for image manipulation with the intelligence of **TensorFlow Lite** for AI-powered analysis, all running on the latest **Java 21** and **Kotlin**.
 
