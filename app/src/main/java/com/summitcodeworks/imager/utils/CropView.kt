@@ -1,4 +1,4 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.utils
 
 import android.content.Context
 import android.graphics.*

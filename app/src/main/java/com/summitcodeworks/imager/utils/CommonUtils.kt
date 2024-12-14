@@ -1,21 +1,14 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.utils
 
-import android.content.ContentValues
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
 import android.widget.Toast
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
-import com.summitcodeworks.imager.databinding.ActivityCameraBinding
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStream
 
 class CommonUtils {
 
@@ -57,6 +50,26 @@ class CommonUtils {
                 null
             }
         }
+
+        fun uriToFile(uri: Uri, context: Context): File? {
+            return try {
+                val fileName = "temp_${System.currentTimeMillis()}.jpg"
+                val tempFile = File(context.cacheDir, fileName)
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val outputStream = tempFile.outputStream()
+
+                inputStream?.use { input ->
+                    outputStream.use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                tempFile
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
 
     }
 

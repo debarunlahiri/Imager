@@ -1,4 +1,4 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.activities
 
 import android.content.Context
 import android.content.Intent
@@ -18,6 +18,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.GridLayoutManager
+import com.summitcodeworks.imager.utils.CommonUtils
+import com.summitcodeworks.imager.R
+import com.summitcodeworks.imager.adapters.RedStripAdapter
+import com.summitcodeworks.imager.models.RedStripData
 import com.summitcodeworks.imager.databinding.ActivityImageProcessBinding
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
@@ -27,7 +31,6 @@ import org.opencv.core.Mat
 import org.opencv.core.MatOfPoint
 import org.opencv.core.MatOfPoint2f
 import org.opencv.core.Point
-import org.opencv.core.Rect
 import org.opencv.core.RotatedRect
 import org.opencv.core.Scalar
 import org.opencv.core.Size

@@ -1,16 +1,15 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.adapters
 
 import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.summitcodeworks.imager.databinding.ItemListGalleryLayoutBinding
 import java.io.File
 
-class GalleryAdapter(val imageUris: List<Uri>, val mContext: Context, val onGalleryListener: OnGalleryListener): RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
+class GalleryAdapter(val imageUris: List<File>, val mContext: Context, val onGalleryListener: OnGalleryListener): RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: ItemListGalleryLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
     }
@@ -40,7 +39,7 @@ class GalleryAdapter(val imageUris: List<Uri>, val mContext: Context, val onGall
     }
 
     interface OnGalleryListener {
-        fun onGalleryClick(imageUri: Uri)
-        fun onGalleryDelete(imageUri: Uri)
+        fun onGalleryClick(imageUri: File)
+        fun onGalleryDelete(imageUri: File)
     }
 }

@@ -1,4 +1,4 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.activities
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -18,6 +18,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.summitcodeworks.imager.utils.CropView
 import com.summitcodeworks.imager.databinding.ActivityImageEditBinding
 import java.io.File
 import java.io.FileOutputStream

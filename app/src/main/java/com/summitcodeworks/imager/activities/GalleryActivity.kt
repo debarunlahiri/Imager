@@ -1,10 +1,8 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.activities
 
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
@@ -13,14 +11,14 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.summitcodeworks.imager.adapters.GalleryAdapter
+import com.summitcodeworks.imager.R
 import com.summitcodeworks.imager.databinding.ActivityGalleryBinding
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
@@ -28,7 +26,7 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
     private lateinit var binding: ActivityGalleryBinding
     private lateinit var mContext: Context
     private lateinit var galleryAdapter: GalleryAdapter
-    private lateinit var imageList: MutableList<Uri>
+    private lateinit var imageList: MutableList<File>
     private var isFromGallery: Boolean = false
 
     // Register activity result launcher for picking images
@@ -101,16 +99,16 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
         }
     }
 
-    private fun loadImagesFromPrivateFolder(): MutableList<Uri> {
-        val imageUris = mutableListOf<Uri>()
+    private fun loadImagesFromPrivateFolder(): MutableList<File> {
+        val imageFiles = mutableListOf<File>()
         val imageFolder = getExternalFilesDir(null) // Replace with getFilesDir() for internal storage
 
         imageFolder?.listFiles()?.forEach { file ->
             if (file.isFile && isImageFile(file.name)) {
-                imageUris.add(Uri.fromFile(file))
+                imageFiles.add(file)
             }
         }
-        return imageUris
+        return imageFiles
     }
 
     private fun isImageFile(fileName: String): Boolean {
@@ -167,23 +165,23 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
         }
     }
 
-    override fun onGalleryClick(imageUri: Uri) {
+    override fun onGalleryClick(imageFile: File) {
         val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
-        imagePreviewIntent.putExtra("imageUri", imageUri.toString())
+        imagePreviewIntent.putExtra("imageFilePath", imageFile.absolutePath)
         startActivity(imagePreviewIntent)
     }
 
-    override fun onGalleryDelete(imageUri: Uri) {
+    override fun onGalleryDelete(imageFile: File) {
         try {
             // Convert Uri to File
-            val file = File(imageUri.path ?: "")
+            val file = imageFile
             // Check if file exists and delete it
             if (file.exists()) {
                 val isDeleted = file.delete()
                 if (isDeleted) {
                     // If successfully deleted, remove it from the list
-                    imageList.remove(imageUri)
-                    galleryAdapter.notifyItemRemoved(imageList.indexOf(imageUri))
+                    imageList.remove(imageFile)
+                    galleryAdapter.notifyItemRemoved(imageList.indexOf(imageFile))
                     Toast.makeText(mContext, "Image deleted successfully.", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(mContext, "Failed to delete the image.", Toast.LENGTH_SHORT).show()
@@ -193,7 +191,6 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(mContext, "An error occurred: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 

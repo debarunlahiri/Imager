@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.room.ktx)
     implementation(project(":opencv"))
+    implementation(libs.androidx.legacy.support.v4)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -74,5 +75,8 @@ dependencies {
 
     implementation("com.google.mlkit:text-recognition:16.0.0")
     implementation("com.rmtheis:tess-two:9.1.0")
+
+    implementation("org.tensorflow:tensorflow-lite:2.12.0")
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.0")
 
 }

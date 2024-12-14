@@ -1,4 +1,4 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.activities
 
 import android.Manifest
 import android.content.Context
@@ -14,7 +14,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
-import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.widget.Toast
@@ -23,9 +22,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.summitcodeworks.imager.databinding.ActivityCameraBinding
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors

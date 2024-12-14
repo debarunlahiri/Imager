@@ -1,4 +1,4 @@
-package com.summitcodeworks.imager
+package com.summitcodeworks.imager.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.summitcodeworks.imager.databinding.ItemListRedStripLayoutBinding
+import com.summitcodeworks.imager.models.RedStripData
 
 class RedStripAdapter(private val redStripDataList: List<RedStripData>, private val mContext: Context, private val onRedStripAdapterListener: OnRedStripAdapterListener):
     RecyclerView.Adapter<RedStripAdapter.ViewHolder>() {

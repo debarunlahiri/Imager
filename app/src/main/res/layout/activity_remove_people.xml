@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".activities.ImagePreviewActivity">
+    tools:context=".activities.RemovePeopleActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/cvImagePreviewBack"
+            android:id="@+id/cvEnhanceBack"
             android:layout_width="0dp"
             android:layout_height="40dp"
             android:layout_marginStart="16dp"
@@ -31,7 +31,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:id="@+id/ivImagePreviewBack"
+                android:id="@+id/ivEnhanceBack"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
@@ -40,7 +40,22 @@
                 app:tint="@color/white" />
         </androidx.cardview.widget.CardView>
 
-
+        <Button
+            android:id="@+id/bSaveImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#00FFFFFF"
+            android:text="Save"
+            app:cornerRadius="5dp"
+            app:icon="@drawable/outline_save_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bShareImage"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp" />
 
         <Button
             android:id="@+id/bShareImage"
@@ -60,25 +75,42 @@
             app:strokeWidth="1dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-    <com.jsibbold.zoomage.ZoomageView
-        android:id="@+id/myZoomageView"
+    <ImageView
+        android:id="@+id/imageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toTopOf="@+id/clearOutlineButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
-        app:zoomage_animateOnReset="true"
-        app:zoomage_autoCenter="true"
-        app:zoomage_autoResetMode="UNDER"
-        app:zoomage_maxScale="8"
-        app:zoomage_minScale="0.6"
-        app:zoomage_restrictBounds="false"
-        app:zoomage_translatable="true"
-        app:zoomage_zoomable="true" />
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
 
+    <Button
+        android:id="@+id/loadImageButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="Load Image"
+        app:cornerRadius="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/clearOutlineButton" />
 
+    <Button
+        android:id="@+id/clearOutlineButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#FFFFFF"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="Clear Outline"
+        android:textColor="@color/black"
+        app:cornerRadius="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/loadImageButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
