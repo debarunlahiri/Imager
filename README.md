@@ -7,10 +7,24 @@ Imager is a cutting-edge application designed to unlock the potential of your im
 - **Machine learning** using TensorFlow Lite
 - Fast, modern performance powered by **Java 21** & **Kotlin**
 
-## 📸 App Screenshot
-<div style="border: 10px solid #ccc; border-radius: 10px; max-height: 500px; padding: 10px; margin: 20px 0; overflow: hidden; display: inline-block; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
-  <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734196327.png" alt="App Screenshot" style="height: 500px; width: auto; object-fit: contain;">
-</div>
+## 📸 App Screenshots
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734196327.png" alt="Home Screen" style="height: 500px; object-fit: contain;">
+      <p><strong>Home Screen</strong></p>
+    </td>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204665.png" alt="Image Grayscale" style="height: 500px; object-fit: contain;">
+      <p><strong>Image Grayscale</strong></p>
+    </td>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="Image Text Extraction" style="height: 500px; object-fit: contain;">
+      <p><strong>Image Text Extraction</strong></p>
+    </td>
+  </tr>
+</table>
 
 ## 💻 Requirements
 - **Java 21** or higher
@@ -21,4 +35,13 @@ Imager is a cutting-edge application designed to unlock the potential of your im
 We welcome contributions! Fork, create a branch, and submit your pull request.
 
 ## 📄 License
+
 MIT License
+
+Copyright (c) 2024 Summit Codeworks
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
