@@ -9,7 +9,7 @@ Imager is a cutting-edge application designed to unlock the potential of your im
 
 ## 📸 App Screenshots
 
-<div style="display: flex; justify-content: center; gap: 20px; margin: 20px 0;">
+<div style="display: flex; justify-content: center; align-items: flex-start; gap: 20px;">
 
   <div style="text-align: center;">
     <div style="border: 10px solid #ccc; border-radius: 10px; max-height: 500px; padding: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
