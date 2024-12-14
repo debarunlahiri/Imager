@@ -9,30 +9,22 @@ Imager is a cutting-edge application designed to unlock the potential of your im
 
 ## 📸 App Screenshots
 
-<div style="display: flex; justify-content: center; align-items: flex-start; gap: 20px;">
-
-  <div style="text-align: center;">
-    <div style="border: 10px solid #ccc; border-radius: 10px; max-height: 500px; padding: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
-      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734196327.png" alt="Home Screen" style="height: 500px; width: auto; object-fit: contain;">
-    </div>
-    <p><strong>Home Screen</strong></p>
-  </div>
-
-  <div style="text-align: center;">
-    <div style="border: 10px solid #ccc; border-radius: 10px; max-height: 500px; padding: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
-      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204665.png" alt="Image Grayscale" style="height: 500px; width: auto; object-fit: contain;">
-    </div>
-    <p><strong>Image Grayscale</strong></p>
-  </div>
-
-  <div style="text-align: center;">
-    <div style="border: 10px solid #ccc; border-radius: 10px; max-height: 500px; padding: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
-      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="Image Text Extraction" style="height: 500px; width: auto; object-fit: contain;">
-    </div>
-    <p><strong>Image Text Extraction</strong></p>
-  </div>
-
-</div>
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734196327.png" alt="Home Screen" style="height: 500px; object-fit: contain;">
+      <p><strong>Home Screen</strong></p>
+    </td>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204665.png" alt="Image Grayscale" style="height: 500px; object-fit: contain;">
+      <p><strong>Image Grayscale</strong></p>
+    </td>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="Image Text Extraction" style="height: 500px; object-fit: contain;">
+      <p><strong>Image Text Extraction</strong></p>
+    </td>
+  </tr>
+</table>
 
 ## 💻 Requirements
 - **Java 21** or higher
