@@ -16,12 +16,16 @@ Imager is a cutting-edge application designed to unlock the potential of your im
       <p><strong>Home Screen</strong></p>
     </td>
     <td align="center">
-      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204665.png" alt="Image Grayscale" style="height: 500px; object-fit: contain;">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734205320.png" alt="Image Grayscale" style="height: 500px; object-fit: contain;">
       <p><strong>Image Grayscale</strong></p>
     </td>
     <td align="center">
       <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="Image Text Extraction" style="height: 500px; object-fit: contain;">
       <p><strong>Image Text Extraction</strong></p>
+    </td>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="Image Text Extraction" style="height: 500px; object-fit: contain;">
+      <p><strong>App Gallery</strong></p>
     </td>
   </tr>
 </table>
