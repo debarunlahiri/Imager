@@ -8,8 +8,8 @@ Imager is a cutting-edge application designed to unlock the potential of your im
 - Fast, modern performance powered by **Java 21** & **Kotlin**
 
 ## 📸 App Screenshot
-<div style="max-width: 600px; border: 5px solid #ccc; padding: 10px; margin: 10px 0;">
-  <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734196327.png" alt="App Screenshot" style="width: 100%; height: auto;">
+<div style="max-width: 600px; max-height: 800px; border: 5px solid #ccc; padding: 10px; margin: 10px 0; overflow: hidden;">
+  <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734196327.png" alt="App Screenshot" style="width: 100%; max-height: 800px; height: auto; object-fit: contain;">
 </div>
 
 ## 💻 Requirements
