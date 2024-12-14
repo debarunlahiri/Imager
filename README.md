@@ -7,6 +7,9 @@ Imager is a cutting-edge application designed to unlock the potential of your im
 - **Machine learning** using TensorFlow Lite
 - Fast, modern performance powered by **Java 21** & **Kotlin**
 
+## 📱 App Icon
+![App Icon](https://github.com/debarunlahiri/Imager/blob/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp)
+
 ## 📸 App Screenshots
 
 <table>
@@ -26,7 +29,7 @@ Imager is a cutting-edge application designed to unlock the potential of your im
   </tr>
   <tr>
     <td align="center">
-      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="Image Text Extraction" style="height: 500px; object-fit: contain;">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="App Gallery" style="height: 500px; object-fit: contain;">
       <p><strong>App Gallery</strong></p>
     </td>
   </tr>
