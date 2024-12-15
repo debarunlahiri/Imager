@@ -25,6 +25,9 @@
         android:theme="@style/Theme.Imager"
         tools:targetApi="31">
         <activity
+            android:name=".activities.MemeMakerActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.TextExtractorActivity"
             android:exported="false" />
         <activity

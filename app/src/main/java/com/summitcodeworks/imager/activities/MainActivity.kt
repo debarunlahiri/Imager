@@ -114,6 +114,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         toolsDataList.add(ToolsData("remove_people", "Remove People", R.drawable.ic_image_outline))
         toolsDataList.add(ToolsData("background_remove", "Background Remover", R.drawable.ic_bg_remover))
         toolsDataList.add(ToolsData("text_extractor", "Text Extractor", R.drawable.ic_text_to_image))
+        toolsDataList.add(ToolsData("meme_maker", "Meme Maker", R.drawable.ic_smile))
     }
 
     private fun initTools() {
@@ -185,20 +186,24 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
     override fun onToolsAdapterClick(toolsData: ToolsData) {
         when (toolsData.tool_id) {
             "grayscale" -> {
-                val enhanceIntent = Intent(this, ImageEnhanceActivity::class.java)
-                startActivity(enhanceIntent)
+                val intent = Intent(this, ImageEnhanceActivity::class.java)
+                startActivity(intent)
             }
             "remove_people" -> {
-                val enhanceIntent = Intent(this, RemovePeopleActivity::class.java)
-                startActivity(enhanceIntent)
+                val intent = Intent(this, RemovePeopleActivity::class.java)
+                startActivity(intent)
             }
             "background_remove" -> {
-                val enhanceIntent = Intent(this, BackgroundRemoverActivity::class.java)
-                startActivity(enhanceIntent)
+                val intent = Intent(this, BackgroundRemoverActivity::class.java)
+                startActivity(intent)
             }
             "text_extractor" -> {
-                val enhanceIntent = Intent(this, TextExtractorActivity::class.java)
-                startActivity(enhanceIntent)
+                val intent = Intent(this, TextExtractorActivity::class.java)
+                startActivity(intent)
+            }
+            "meme_maker" -> {
+                val intent = Intent(this, MemeMakerActivity::class.java)
+                startActivity(intent)
             }
         }
     }
