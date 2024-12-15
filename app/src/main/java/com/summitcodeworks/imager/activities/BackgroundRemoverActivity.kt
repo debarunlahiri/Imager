@@ -8,10 +8,14 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.summitcodeworks.imager.R
 import com.summitcodeworks.imager.databinding.ActivityBackgroundRemoverBinding
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import org.opencv.objdetect.CascadeClassifier
+import java.io.File
+import java.io.FileOutputStream
 
 class BackgroundRemoverActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBackgroundRemoverBinding
@@ -65,44 +69,363 @@ class BackgroundRemoverActivity : AppCompatActivity() {
 
     private fun processImageWithAdvancedTechniques(bitmap: Bitmap) {
         try {
-            // Convert bitmap to Mat
             val originalMat = bitmapToMat(bitmap)
-
-            // Create working copy
             val workingMat = originalMat.clone()
 
-            // Apply preprocessing with error handling
-            val preprocessedMat = try {
-                applyPreprocessing(workingMat)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                showToast("Error in preprocessing: ${e.message}")
-                workingMat.clone() // Use original if preprocessing fails
-            }
+            // Create multiple masks using different techniques
+            val grabCutMask = createGrabCutMask(workingMat)
+            val kmeansMask = createKMeansMask(workingMat)
+            val watershedMask = createWatershedMask(workingMat)
+            val featureMask = createFeaturePreservationMask(workingMat)
 
-            // Generate initial mask
-            val initialMask = generateInitialMask(preprocessedMat)
+            // Combine masks using weighted approach
+            val combinedMask = combineMasksWithWeights(
+                listOf(
+                    Pair(grabCutMask, 0.4f),
+                    Pair(kmeansMask, 0.2f),
+                    Pair(watershedMask, 0.2f),
+                    Pair(featureMask, 0.2f)
+                )
+            )
 
-            // Refine mask
-            val refinedMask = refineMask(preprocessedMat, initialMask)
+            // Apply refinement
+            val refinedMask = refineSegmentation(workingMat, combinedMask)
 
-            // Apply final mask
             val resultBitmap = applyFinalMask(bitmap, refinedMask)
-
-            // Display result
             binding.imageView.setImageBitmap(resultBitmap)
 
             // Clean up
             originalMat.release()
             workingMat.release()
-            preprocessedMat.release()
-            initialMask.release()
+            grabCutMask.release()
+            kmeansMask.release()
+            watershedMask.release()
+            featureMask.release()
+            combinedMask.release()
             refinedMask.release()
 
         } catch (e: Exception) {
             e.printStackTrace()
             showToast("Error processing image: ${e.message}")
         }
+    }
+
+    private fun combineMasksWithWeights(masks: List<Pair<Mat, Float>>): Mat {
+        val result = Mat.zeros(masks[0].first.size(), CvType.CV_32FC1)
+
+        // Combine masks using weights
+        masks.forEach { (mask, weight) ->
+            val weightedMask = Mat()
+            mask.convertTo(weightedMask, CvType.CV_32FC1)
+            Core.multiply(weightedMask, Scalar(weight.toDouble()), weightedMask)
+            Core.add(result, weightedMask, result)
+        }
+
+        // Normalize and convert to binary
+        Core.normalize(result, result, 0.0, 255.0, Core.NORM_MINMAX)
+        val binaryMask = Mat()
+        result.convertTo(binaryMask, CvType.CV_8UC1)
+        Imgproc.threshold(binaryMask, binaryMask, 127.0, 255.0, Imgproc.THRESH_BINARY)
+
+        return binaryMask
+    }
+
+    private fun refineSegmentation(input: Mat, mask: Mat): Mat {
+        val refined = Mat()
+        mask.copyTo(refined)
+
+        // Apply guided filter for edge-aware refinement
+        val gray = Mat()
+        Imgproc.cvtColor(input, gray, Imgproc.COLOR_BGR2GRAY)
+
+        // Convert mask to float
+        val guidedMask = Mat()
+        mask.convertTo(guidedMask, CvType.CV_32FC1, 1.0/255.0)
+
+        // Apply bilateral filter for edge preservation
+        Imgproc.bilateralFilter(guidedMask, refined, 9, 75.0, 75.0)
+
+        // Convert back to binary
+        refined.convertTo(refined, CvType.CV_8UC1, 255.0)
+        Imgproc.threshold(refined, refined, 127.0, 255.0, Imgproc.THRESH_BINARY)
+
+        return refined
+    }
+
+
+    private fun createGrabCutMask(input: Mat): Mat {
+        val mask = Mat()
+        val bgModel = Mat()
+        val fgModel = Mat()
+        val rect = Rect(
+            input.cols() / 8,
+            input.rows() / 8,
+            (input.cols() * 3) / 4,
+            (input.rows() * 3) / 4
+        )
+
+        // Initialize mask
+        mask.create(input.size(), CvType.CV_8UC1)
+        mask.setTo(Scalar(Imgproc.GC_PR_BGD.toDouble()))
+
+        // Mark probable foreground
+        val probFgMask = createProbableForegroundMask(input)
+        mask.setTo(Scalar(Imgproc.GC_PR_FGD.toDouble()), probFgMask)
+
+        // Apply GrabCut
+        Imgproc.grabCut(
+            input,
+            mask,
+            rect,
+            bgModel,
+            fgModel,
+            5,
+            Imgproc.GC_INIT_WITH_MASK
+        )
+
+        // Create binary mask
+        val result = Mat()
+        Core.compare(mask, Scalar(Imgproc.GC_PR_FGD.toDouble()), result, Core.CMP_EQ)
+
+        return result
+    }
+
+    private fun createProbableForegroundMask(input: Mat): Mat {
+        val mask = Mat.zeros(input.size(), CvType.CV_8UC1)
+
+        // Convert the image to grayscale
+        val gray = Mat()
+        Imgproc.cvtColor(input, gray, Imgproc.COLOR_BGR2GRAY)
+
+        // Threshold the grayscale image to create a binary mask (foreground vs background)
+        Imgproc.threshold(gray, mask, 50.0, 255.0, Imgproc.THRESH_BINARY)
+
+        // Optional: Apply morphological operations to remove noise and fill gaps in the mask
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(5.0, 5.0))
+        Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel)
+
+        // Clean up
+        gray.release()
+
+        return mask
+    }
+
+
+    private fun createKMeansMask(input: Mat): Mat {
+        // Convert to Lab color space for better color segmentation
+        val labMat = Mat()
+        Imgproc.cvtColor(input, labMat, Imgproc.COLOR_BGR2Lab)
+
+        // Reshape the image to a 2D array of pixels
+        val pixels = labMat.reshape(1, (labMat.total()).toInt())
+
+        // Convert to float for k-means
+        val floatPixels = Mat()
+        pixels.convertTo(floatPixels, CvType.CV_32F)
+
+        // Apply k-means
+        val labels = Mat()
+        val centers = Mat()
+        val criteria = TermCriteria(
+            TermCriteria.MAX_ITER + TermCriteria.EPS,
+            100,
+            0.2
+        )
+
+        Core.kmeans(
+            floatPixels,
+            4, // number of clusters
+            labels,
+            criteria,
+            3,
+            Core.KMEANS_PP_CENTERS,
+            centers
+        )
+
+        // Create mask based on cluster assignment
+        val mask = Mat.zeros(input.size(), CvType.CV_8UC1)
+        val labelsMat = labels.reshape(1, input.rows())
+
+        // Analyze clusters to determine foreground
+        val clusterSizes = IntArray(4)
+        for (i in 0 until labelsMat.rows()) {
+            for (j in 0 until labelsMat.cols()) {
+                clusterSizes[labelsMat.get(i, j)[0].toInt()]++
+            }
+        }
+
+        // Mark largest cluster as foreground
+        val fgCluster = clusterSizes.indexOf(clusterSizes.max())
+        for (i in 0 until labelsMat.rows()) {
+            for (j in 0 until labelsMat.cols()) {
+                if (labelsMat.get(i, j)[0].toInt() == fgCluster) {
+                    mask.put(i, j, 255.0)
+                }
+            }
+        }
+
+        return mask
+    }
+
+    private fun createWatershedMask(input: Mat): Mat {
+        val gray = Mat()
+        Imgproc.cvtColor(input, gray, Imgproc.COLOR_BGR2GRAY)
+
+        // Apply threshold
+        val thresh = Mat()
+        Imgproc.threshold(gray, thresh, 0.0, 255.0, Imgproc.THRESH_BINARY_INV + Imgproc.THRESH_OTSU)
+
+        // Noise removal
+        val kernel = Mat.ones(3, 3, CvType.CV_8UC1)
+        val opening = Mat()
+        Imgproc.morphologyEx(thresh, opening, Imgproc.MORPH_OPEN, kernel, Point(-1.0, -1.0), 2)
+
+        // Sure background area
+        val sureBg = Mat()
+        Imgproc.dilate(opening, sureBg, kernel, Point(-1.0, -1.0), 3)
+
+        // Finding sure foreground area
+        val distTransform = Mat()
+        Imgproc.distanceTransform(opening, distTransform, Imgproc.DIST_L2, 5)
+        val sureFg = Mat()
+        Core.normalize(distTransform, distTransform, 0.0, 1.0, Core.NORM_MINMAX)
+        Imgproc.threshold(distTransform, sureFg, 0.5, 255.0, Imgproc.THRESH_BINARY)
+
+        // Finding unknown region
+        val unknown = Mat()
+        sureFg.convertTo(sureFg, CvType.CV_8UC1)
+        Core.subtract(sureBg, sureFg, unknown)
+
+        // Marker labelling
+        val markers = Mat()
+        Imgproc.connectedComponents(sureFg, markers)
+        Core.add(markers, Scalar(1.0), markers)
+        markers.setTo(Scalar(0.0), unknown)
+
+        // Apply watershed
+        markers.convertTo(markers, CvType.CV_32SC1)
+        Imgproc.watershed(input, markers)
+
+        // Create mask
+        val mask = Mat.zeros(input.size(), CvType.CV_8UC1)
+        markers.convertTo(markers, CvType.CV_8UC1)
+        Core.compare(markers, Scalar(1.0), mask, Core.CMP_GT)
+
+        return mask
+    }
+
+    private fun createFeaturePreservationMask(input: Mat): Mat {
+        val mask = Mat.zeros(input.size(), CvType.CV_8UC1)
+
+        // Color-based feature detection
+        val hsv = Mat()
+        Imgproc.cvtColor(input, hsv, Imgproc.COLOR_BGR2HSV)
+
+        // Detect red regions (common in costumes)
+        val redMask1 = Mat()
+        val redMask2 = Mat()
+        Core.inRange(hsv, Scalar(0.0, 70.0, 50.0), Scalar(10.0, 255.0, 255.0), redMask1)
+        Core.inRange(hsv, Scalar(170.0, 70.0, 50.0), Scalar(180.0, 255.0, 255.0), redMask2)
+        Core.bitwise_or(redMask1, redMask2, redMask1)
+
+        // Detect high contrast regions
+        val gray = Mat()
+        Imgproc.cvtColor(input, gray, Imgproc.COLOR_BGR2GRAY)
+        val edges = Mat()
+        Imgproc.Canny(gray, edges, 100.0, 200.0)
+
+        // Combine masks
+        Core.bitwise_or(mask, redMask1, mask)
+        Core.bitwise_or(mask, edges, mask)
+
+        // Clean up mask
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(5.0, 5.0))
+        Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel)
+
+        return mask
+    }
+
+    private fun detectEdgeFeatures(grayMat: Mat): Mat {
+        val edgeMask = Mat()
+
+        // Apply Canny edge detection
+        Imgproc.Canny(grayMat, edgeMask, 50.0, 150.0)
+
+        // Dilate edges to create connected regions
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(3.0, 3.0))
+        Imgproc.dilate(edgeMask, edgeMask, kernel)
+
+        return edgeMask
+    }
+
+    private fun detectBlobFeatures(grayMat: Mat): Mat {
+        val blobMask = Mat.zeros(grayMat.size(), CvType.CV_8UC1)
+
+        // Apply adaptive thresholding to find potential features
+        val thresholdMat = Mat()
+        Imgproc.adaptiveThreshold(
+            grayMat,
+            thresholdMat,
+            255.0,
+            Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
+            Imgproc.THRESH_BINARY_INV,
+            11,
+            2.0
+        )
+
+        // Find contours in thresholded image
+        val contours = ArrayList<MatOfPoint>()
+        val hierarchy = Mat()
+        Imgproc.findContours(
+            thresholdMat,
+            contours,
+            hierarchy,
+            Imgproc.RETR_EXTERNAL,
+            Imgproc.CHAIN_APPROX_SIMPLE
+        )
+
+        // Filter and preserve significant blobs (like eyes)
+        for (contour in contours) {
+            val area = Imgproc.contourArea(contour)
+            if (area > 50 && area < 3000) {  // Adjusted thresholds for eye-sized features
+                val boundingRect = Imgproc.boundingRect(contour)
+                // Check aspect ratio to filter out non-eye-like shapes
+                val aspectRatio = boundingRect.width.toDouble() / boundingRect.height.toDouble()
+                if (aspectRatio in 0.5..2.0) {
+                    Imgproc.rectangle(blobMask, boundingRect, Scalar(255.0), -1)
+                }
+            }
+            contour.release()
+        }
+
+        // Clean up
+        thresholdMat.release()
+        hierarchy.release()
+
+        return blobMask
+    }
+
+    private fun detectContrastFeatures(grayMat: Mat): Mat {
+        val contrastMask = Mat.zeros(grayMat.size(), CvType.CV_8UC1)
+
+        // Calculate local contrast
+        val blur = Mat()
+        Imgproc.GaussianBlur(grayMat, blur, Size(21.0, 21.0), 0.0)
+        val contrast = Mat()
+        Core.absdiff(grayMat, blur, contrast)
+
+        // Threshold high-contrast regions
+        Imgproc.threshold(contrast, contrast, 30.0, 255.0, Imgproc.THRESH_BINARY)
+
+        // Morphological operations to clean up
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(3.0, 3.0))
+        Imgproc.morphologyEx(contrast, contrastMask, Imgproc.MORPH_CLOSE, kernel)
+
+        // Clean up
+        blur.release()
+        contrast.release()
+
+        return contrastMask
     }
 
     private fun bitmapToMat(bitmap: Bitmap): Mat {
@@ -151,6 +474,41 @@ class BackgroundRemoverActivity : AppCompatActivity() {
         labChannels.forEach { it.release() }
 
         return result
+    }
+
+
+    private fun detectAndPreserveFeatures(grayMat: Mat, faceMask: Mat) {
+        // Create a mask for high-contrast regions (like Spiderman's eyes)
+        val edgeMask = Mat()
+        Imgproc.Canny(grayMat, edgeMask, 100.0, 200.0)
+
+        // Dilate edges to create connected regions
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, Size(3.0, 3.0))
+        Imgproc.dilate(edgeMask, edgeMask, kernel)
+
+        // Find contours in edge mask
+        val contours = ArrayList<MatOfPoint>()
+        val hierarchy = Mat()
+        Imgproc.findContours(
+            edgeMask,
+            contours,
+            hierarchy,
+            Imgproc.RETR_EXTERNAL,
+            Imgproc.CHAIN_APPROX_SIMPLE
+        )
+
+        // Filter and preserve significant contours
+        for (contour in contours) {
+            val area = Imgproc.contourArea(contour)
+            if (area > 100 && area < 5000) { // Adjust these thresholds based on your needs
+                val boundingRect = Imgproc.boundingRect(contour)
+                Imgproc.rectangle(faceMask, boundingRect, Scalar(255.0), -1)
+            }
+            contour.release()
+        }
+
+        edgeMask.release()
+        hierarchy.release()
     }
 
     private fun generateInitialMask(input: Mat): Mat {
