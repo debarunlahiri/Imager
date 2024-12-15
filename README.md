@@ -1,5 +1,9 @@
 # Imager - Powering Images with AI and Processing
 
+<p align="center">
+  <img src="https://github.com/debarunlahiri/Imager/blob/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" alt="App Icon" style="height: 150px;">
+</p>
+
 Imager is a cutting-edge application designed to unlock the potential of your images. It combines the power of **OpenCV** for image manipulation with the intelligence of **TensorFlow Lite** for AI-powered analysis, all running on the latest **Java 21** and **Kotlin**.
 
 ## 🚀 Features
@@ -16,12 +20,18 @@ Imager is a cutting-edge application designed to unlock the potential of your im
       <p><strong>Home Screen</strong></p>
     </td>
     <td align="center">
-      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204665.png" alt="Image Grayscale" style="height: 500px; object-fit: contain;">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734205320.png" alt="Image Grayscale" style="height: 500px; object-fit: contain;">
       <p><strong>Image Grayscale</strong></p>
     </td>
     <td align="center">
-      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="Image Text Extraction" style="height: 500px; object-fit: contain;">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204665.png" alt="Image Text Extraction" style="height: 500px; object-fit: contain;">
       <p><strong>Image Text Extraction</strong></p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/debarunlahiri/Imager/blob/master/screenshots/Screenshot_1734204676.png" alt="App Gallery" style="height: 500px; object-fit: contain;">
+      <p><strong>App Gallery</strong></p>
     </td>
   </tr>
 </table>
