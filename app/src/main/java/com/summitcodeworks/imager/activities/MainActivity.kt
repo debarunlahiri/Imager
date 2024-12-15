@@ -58,8 +58,6 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
 
     val launcher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
         if (results.all { it.value }) {
-            // All permissions are granted
-            // Proceed with loading images
         } else {
             Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
         }
@@ -115,6 +113,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         toolsDataList.add(ToolsData("background_remove", "Background Remover", R.drawable.ic_bg_remover))
         toolsDataList.add(ToolsData("text_extractor", "Text Extractor", R.drawable.ic_text_to_image))
         toolsDataList.add(ToolsData("meme_maker", "Meme Maker", R.drawable.ic_smile))
+        toolsDataList.add(ToolsData("image_generator", "Image Generator", R.drawable.ic_text_to_image))
     }
 
     private fun initTools() {
@@ -162,13 +161,10 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
 
     override fun onGalleryDelete(imageFile: File) {
         try {
-            // Convert Uri to File
             val file = imageFile
-            // Check if file exists and delete it
             if (file.exists()) {
                 val isDeleted = file.delete()
                 if (isDeleted) {
-                    // If successfully deleted, remove it from the list
                     imageList.remove(imageFile)
                     galleryAdapter.notifyItemRemoved(imageList.indexOf(imageFile))
                     Toast.makeText(mContext, "Image deleted successfully.", Toast.LENGTH_SHORT).show()
@@ -203,6 +199,10 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
             }
             "meme_maker" -> {
                 val intent = Intent(this, MemeMakerActivity::class.java)
+                startActivity(intent)
+            }
+            "image_generator" -> {
+                val intent = Intent(this, ImageGeneratorActivity::class.java)
                 startActivity(intent)
             }
         }
