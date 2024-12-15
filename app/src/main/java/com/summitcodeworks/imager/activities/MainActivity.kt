@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
 
     private fun initToolsData() {
         toolsDataList.add(ToolsData("grayscale", "Grayscale", R.drawable.ic_greyscale))
-        toolsDataList.add(ToolsData("remove_people", "Remove People", R.drawable.ic_image_outline))
+        toolsDataList.add(ToolsData("deepfake", "Deepfake", R.drawable.ic_deepfake))
         toolsDataList.add(ToolsData("background_remove", "Background Remover", R.drawable.ic_bg_remover))
         toolsDataList.add(ToolsData("text_extractor", "Text Extractor", R.drawable.ic_text_to_image))
         toolsDataList.add(ToolsData("meme_maker", "Meme Maker", R.drawable.ic_smile))
@@ -143,12 +143,18 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         val imageFiles = mutableListOf<File>()
         val imageFolder = getExternalFilesDir(null) // Replace with getFilesDir() for internal storage
 
-        imageFolder?.listFiles()?.forEach { file ->
+        imageFolder?.listFiles()?.sortedByDescending { it.lastModified() }?.forEach { file ->
             if (file.isFile && isImageFile(file.name)) {
                 imageFiles.add(file)
             }
+            // Stop if 6 files have been added
+            if (imageFiles.size >= 6) {
+                return@forEach
+            }
         }
-        return imageFiles
+
+        // Limit the list to 6 files
+        return imageFiles.take(6).toMutableList()
     }
 
     private fun isImageFile(fileName: String): Boolean {
@@ -188,7 +194,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
                 val intent = Intent(this, ImageEnhanceActivity::class.java)
                 startActivity(intent)
             }
-            "remove_people" -> {
+            "deepfake" -> {
                 val intent = Intent(this, RemovePeopleActivity::class.java)
                 startActivity(intent)
             }
