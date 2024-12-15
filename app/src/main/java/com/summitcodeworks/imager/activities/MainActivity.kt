@@ -16,8 +16,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.summitcodeworks.imager.R
 import com.summitcodeworks.imager.adapters.GalleryAdapter
 import com.summitcodeworks.imager.adapters.ToolsAdapter
+import com.summitcodeworks.imager.apiClient.RetrofitClient
 import com.summitcodeworks.imager.databinding.ActivityMainBinding
 import com.summitcodeworks.imager.models.ToolsData
+import com.summitcodeworks.imager.utils.CommonUtils
 import org.opencv.android.OpenCVLoader
 import java.io.File
 
@@ -75,6 +77,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         }
 
         mContext = this
+        CommonUtils.mContext = mContext
 
         if (!OpenCVLoader.initDebug()) {
             Log.e("OpenCV", "OpenCV initialization failed")

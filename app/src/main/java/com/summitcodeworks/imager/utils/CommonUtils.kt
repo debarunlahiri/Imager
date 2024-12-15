@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import java.io.File
 import java.io.FileOutputStream
@@ -13,6 +14,9 @@ import java.io.IOException
 class CommonUtils {
 
     companion object {
+
+        lateinit var mContext: Context
+
         fun convertUriToBitmap(context: Context, uri: Uri): Bitmap? {
             var bitmap: Bitmap? = null
 
@@ -69,6 +73,8 @@ class CommonUtils {
                 null
             }
         }
+
+
 
 
     }
