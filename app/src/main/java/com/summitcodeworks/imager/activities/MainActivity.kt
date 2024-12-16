@@ -117,6 +117,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         toolsDataList.add(ToolsData("text_extractor", "Text Extractor", R.drawable.ic_text_to_image))
         toolsDataList.add(ToolsData("meme_maker", "Meme Maker", R.drawable.ic_smile))
         toolsDataList.add(ToolsData("image_generator", "Image Generator", R.drawable.ic_text_to_image))
+        toolsDataList.add(ToolsData("scan_document", "Scan Document", R.drawable.ic_scanner))
     }
 
     private fun initTools() {
@@ -212,6 +213,10 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
             }
             "image_generator" -> {
                 val intent = Intent(this, ImageGeneratorActivity::class.java)
+                startActivity(intent)
+            }
+            "scan_document" -> {
+                val intent = Intent(this, DocumentScanActivity::class.java)
                 startActivity(intent)
             }
         }

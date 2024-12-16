@@ -4,5 +4,7 @@
     <external-path
         name="external_files"
         path="Android/data/com.summitcodeworks.imager/files/" />
-
+    <cache-path
+        name="cached_images"
+        path="." />
 </paths>

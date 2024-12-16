@@ -29,6 +29,9 @@
         android:theme="@style/Theme.Imager"
         tools:targetApi="31">
         <activity
+            android:name=".activities.DocumentScanActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.DeepfakeActivity"
             android:exported="false" />
         <activity
