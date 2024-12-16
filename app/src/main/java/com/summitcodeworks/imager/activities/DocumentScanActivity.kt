@@ -68,49 +68,50 @@ class DocumentScanActivity : AppCompatActivity() {
     }
 
     private fun cropImage() {
-        // Get the crop rectangle from CropView
         val cropRect = binding.cropView.getCropRect()
 
-        // Check if the cropRect is a RectF and convert it to Rect
-        if (cropRect is RectF) {
-            val scaleX = originalBitmap.width / binding.cropView.width.toFloat()
-            val scaleY = originalBitmap.height / binding.cropView.height.toFloat()
+        // Get the actual dimensions of the ImageView
+        val imageView = binding.imageView
+        val imageViewWidth = imageView.width.toFloat()
+        val imageViewHeight = imageView.height.toFloat()
 
-            // Convert RectF to Rect by scaling
-            val scaledCropRect = RectF(
-                (cropRect.left * scaleX).toInt().toFloat(),
-                (cropRect.top * scaleY).toInt().toFloat(),
-                (cropRect.right * scaleX).toInt().toFloat(),
-                (cropRect.bottom * scaleY).toInt().toFloat()
-            )
+        // Calculate scaling factors
+        val scaleX = originalBitmap.width / imageViewWidth
+        val scaleY = originalBitmap.height / imageViewHeight
 
-            // Ensure the crop rectangle is within bounds
-            val clampedCropRect = RectF(
-                scaledCropRect.left.coerceAtLeast(0F),
-                scaledCropRect.top.coerceAtLeast(0F),
-                scaledCropRect.right.coerceAtMost(originalBitmap.width.toFloat()),
-                scaledCropRect.bottom.coerceAtMost(originalBitmap.height.toFloat())
-            )
+        // Scale the crop rectangle to match the original bitmap dimensions
+        val scaledRect = RectF(
+            cropRect.left * scaleX,
+            cropRect.top * scaleY,
+            cropRect.right * scaleX,
+            cropRect.bottom * scaleY
+        )
 
-            // Crop the bitmap using the clamped rectangle
+        // Ensure the scaled rectangle is within bounds
+        val clampedRect = RectF(
+            scaledRect.left.coerceIn(0f, originalBitmap.width.toFloat()),
+            scaledRect.top.coerceIn(0f, originalBitmap.height.toFloat()),
+            scaledRect.right.coerceIn(0f, originalBitmap.width.toFloat()),
+            scaledRect.bottom.coerceIn(0f, originalBitmap.height.toFloat())
+        )
+
+        try {
             val croppedBitmap = Bitmap.createBitmap(
                 originalBitmap,
-                clampedCropRect.left.toInt(),
-                clampedCropRect.top.toInt(),
-                clampedCropRect.width().toInt(),
-                clampedCropRect.height().toInt()
+                clampedRect.left.toInt(),
+                clampedRect.top.toInt(),
+                (clampedRect.right - clampedRect.left).toInt(),
+                (clampedRect.bottom - clampedRect.top).toInt()
             )
 
-            // Update the original bitmap and the ImageView
             originalBitmap = croppedBitmap
             binding.imageView.setImageBitmap(croppedBitmap)
-
-            Toast.makeText(this, "Image cropped", Toast.LENGTH_SHORT).show()
-
-            // Hide the CropView after cropping
             binding.cropView.visibility = View.GONE
-        } else {
-            Toast.makeText(this, "Failed to get crop rectangle", Toast.LENGTH_SHORT).show()
+
+            Toast.makeText(this, "Image cropped successfully", Toast.LENGTH_SHORT).show()
+        } catch (e: IllegalArgumentException) {
+            Toast.makeText(this, "Failed to crop image", Toast.LENGTH_SHORT).show()
+            Log.e("DocumentScanActivity", "Crop failed: ${e.message}")
         }
     }
 
@@ -145,37 +146,64 @@ class DocumentScanActivity : AppCompatActivity() {
         val mat = Mat()
         Utils.bitmapToMat(bitmap, mat)
 
+        // Convert to BGR for OpenCV processing
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR)
+
         val grayMat = Mat()
         Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
         Imgproc.GaussianBlur(grayMat, grayMat, Size(5.0, 5.0), 0.0)
 
         val edges = Mat()
-        Imgproc.Canny(grayMat, edges, 75.0, 200.0)
+        // Adjusted threshold values for better edge detection
+        Imgproc.Canny(grayMat, edges, 50.0, 150.0)
+
+        // Dilate edges to connect broken lines
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(3.0, 3.0))
+        Imgproc.dilate(edges, edges, kernel)
 
         val contours = mutableListOf<MatOfPoint>()
-        Imgproc.findContours(edges, contours, Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
+        val hierarchy = Mat()
+        Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
 
-        val largestContour = contours.maxByOrNull { Imgproc.contourArea(it) }
-        if (largestContour != null && Imgproc.contourArea(largestContour) > 5000) {
+        // Sort contours by area in descending order
+        val sortedContours = contours.sortedByDescending { Imgproc.contourArea(it) }
+
+        var documentDetected = false
+
+        for (contour in sortedContours) {
+            val area = Imgproc.contourArea(contour)
+            // Check if contour is large enough (adjust threshold as needed)
+            if (area < 0.05 * mat.width() * mat.height()) continue
+
             val approx = MatOfPoint2f()
-            val peri = Imgproc.arcLength(MatOfPoint2f(*largestContour.toArray()), true)
-            Imgproc.approxPolyDP(MatOfPoint2f(*largestContour.toArray()), approx, 0.02 * peri, true)
+            val peri = Imgproc.arcLength(MatOfPoint2f(*contour.toArray()), true)
+            Imgproc.approxPolyDP(MatOfPoint2f(*contour.toArray()), approx, 0.02 * peri, true)
 
             if (approx.total() == 4L) {
                 corners.clear()
                 corners.addAll(approx.toList())
                 drawCorners(mat)
+                documentDetected = true
+
+                // Apply perspective transform
+                val transformedBitmap = perspectiveTransform()
+                originalBitmap = transformedBitmap
+                binding.imageView.setImageBitmap(transformedBitmap)
+
                 Toast.makeText(this, "Document detected", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Unable to detect a quadrilateral", Toast.LENGTH_SHORT).show()
+                break
             }
-        } else {
-            Toast.makeText(this, "No significant contours found", Toast.LENGTH_SHORT).show()
         }
 
-        val resultBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(mat, resultBitmap)
-        binding.imageView.setImageBitmap(resultBitmap)
+        if (!documentDetected) {
+            Toast.makeText(this, "No document detected", Toast.LENGTH_SHORT).show()
+            binding.imageView.setImageBitmap(bitmap)
+        }
+
+        mat.release()
+        grayMat.release()
+        edges.release()
+        hierarchy.release()
     }
 
     private fun drawCorners(mat: Mat) {
@@ -213,21 +241,39 @@ class DocumentScanActivity : AppCompatActivity() {
         val transformedMat = Mat()
         val originalMat = Mat()
         Utils.bitmapToMat(originalBitmap, originalMat)
-        Imgproc.warpPerspective(originalMat, transformedMat, transformMat, Size(width.toDouble(), height.toDouble()))
+
+        // Fix potential flipping by ensuring the transformation matrix is applied correctly
+        Imgproc.warpPerspective(
+            originalMat,
+            transformedMat,
+            transformMat,
+            Size(width.toDouble(), height.toDouble()),
+            Imgproc.INTER_LINEAR,  // Use linear interpolation for better quality
+            Core.BORDER_CONSTANT,
+            Scalar(0.0, 0.0, 0.0) // Optional: Fill borders with black if needed
+        )
 
         val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         Utils.matToBitmap(transformedMat, resultBitmap)
+
+        // Release the matrices to free memory
+        originalMat.release()
+        transformedMat.release()
+
         return resultBitmap
     }
 
-    private fun orderPoints(points: List<Point>): List<Point> {
-        val sorted = points.sortedBy { it.x + it.y }
-        val topLeft = sorted[0]
-        val bottomRight = sorted[3]
 
-        val remaining = sorted.subList(1, 3).sortedBy { it.x - it.y }
-        val topRight = remaining[0]
-        val bottomLeft = remaining[1]
+    private fun orderPoints(points: List<Point>): List<Point> {
+        // Find top-left (smallest sum), bottom-right (largest sum)
+        val sortedSum = points.sortedBy { it.x + it.y }
+        val topLeft = sortedSum[0]
+        val bottomRight = sortedSum[3]
+
+        // Find top-right (smallest difference), bottom-left (largest difference)
+        val sortedDiff = points.sortedBy { it.y - it.x }
+        val topRight = sortedDiff[0]
+        val bottomLeft = sortedDiff[3]
 
         return listOf(topLeft, topRight, bottomRight, bottomLeft)
     }

@@ -37,7 +37,7 @@ class CommonUtils {
             return bitmap
         }
 
-        fun bitmapToUri(context: Context, bitmap: Bitmap, fileName: String = "image_${System.currentTimeMillis()}.jpg"): Uri? {
+        fun convertBitmapToUri(context: Context, bitmap: Bitmap, fileName: String = "image_${System.currentTimeMillis()}.jpg"): Uri? {
             return try {
                 // Create a file in the app's private files directory
                 val file = File(context.filesDir, fileName)
@@ -55,7 +55,7 @@ class CommonUtils {
             }
         }
 
-        fun uriToFile(uri: Uri, context: Context): File? {
+        fun convertUriToFile(uri: Uri, context: Context): File? {
             return try {
                 val fileName = "temp_${System.currentTimeMillis()}.jpg"
                 val tempFile = File(context.cacheDir, fileName)
@@ -69,6 +69,33 @@ class CommonUtils {
                 }
                 tempFile
             } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+        fun convertBitmapToFile(
+        context: Context,
+        bitmap: Bitmap,
+        filename: String,
+        format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG,
+        quality: Int = 100
+        ): File? {
+            return try {
+                // Create a file in the app's cache directory
+                val file = File(context.cacheDir, filename)
+
+                // Create output stream
+                FileOutputStream(file).use { fos ->
+                    // Compress bitmap to output stream
+                    bitmap.compress(format, quality, fos)
+                    // Flush and close the stream
+                    fos.flush()
+                }
+
+                // Return the file if everything succeeded
+                file
+            } catch (e: IOException) {
                 e.printStackTrace()
                 null
             }

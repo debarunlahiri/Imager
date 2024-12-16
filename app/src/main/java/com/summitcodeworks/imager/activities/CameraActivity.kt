@@ -4,6 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -13,8 +16,11 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.exifinterface.media.ExifInterface
 import com.summitcodeworks.imager.databinding.ActivityCameraBinding
+import com.summitcodeworks.imager.utils.CommonUtils
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -63,8 +69,10 @@ class CameraActivity : AppCompatActivity() {
                     it.setSurfaceProvider(binding.textureView.surfaceProvider)
                 }
 
+            val rotation = binding.textureView.display.rotation
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+                .setTargetRotation(rotation) // Add this line to set target rotation
                 .build()
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -79,6 +87,7 @@ class CameraActivity : AppCompatActivity() {
             }
         }, ContextCompat.getMainExecutor(this))
     }
+
 
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
@@ -104,16 +113,22 @@ class CameraActivity : AppCompatActivity() {
                         photoFile
                     )
 
+                    // Fix rotation
+                    val fixedBitmap = fixImageRotation(photoFile)
+
+                    // Save the corrected bitmap back to the file
+                    FileOutputStream(photoFile).use { out ->
+                        fixedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                    }
+
                     // Return the result to calling activity
                     val resultIntent = Intent().apply {
                         putExtra(EXTRA_IMAGE_URI, imageUri.toString())
-                        // Add any additional data if needed
                         putExtra(EXTRA_IMAGE_PATH, photoFile.absolutePath)
                     }
                     setResult(Activity.RESULT_OK, resultIntent)
                     finish()
                 }
-
                 override fun onError(exception: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exception.message}", exception)
                     Toast.makeText(
@@ -126,6 +141,26 @@ class CameraActivity : AppCompatActivity() {
                 }
             }
         )
+    }
+
+    private fun fixImageRotation(photoFile: File): Bitmap {
+        val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+        val exif = ExifInterface(photoFile.absolutePath)
+        val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+
+        val rotationDegrees = when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270
+            else -> 0
+        }
+
+        return if (rotationDegrees != 0) {
+            val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        } else {
+            bitmap
+        }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
