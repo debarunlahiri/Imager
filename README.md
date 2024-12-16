@@ -11,6 +11,15 @@ Imager is a cutting-edge application designed to unlock the potential of your im
 - **Machine learning** using TensorFlow Lite
 - Fast, modern performance powered by **Java 21** & **Kotlin**
 
+### Feature Progress:
+- **Image Grayscale**: ✅ Completed
+- **Deepfake**: 🔄 In Progress
+- **Background Remover**: 🔄 In Progress
+- **Text Extraction**: ✅ Completed
+- **Meme Maker**: 🔄 In Progress
+- **Image Generator**: ✅ Completed
+- **Document Scanner**: 🔄 In Progress
+
 ## 📸 App Screenshots
 
 <table>
