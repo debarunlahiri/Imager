@@ -102,4 +102,8 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle.v130)
     implementation(libs.androidx.camera.view.v130)
 
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
+
+    implementation("com.github.stfalcon-studio:StfalconImageViewer:v1.0.1")
+
 }

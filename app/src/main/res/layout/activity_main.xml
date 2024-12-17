@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@color/background_primary"
     tools:context=".activities.MainActivity">
 
     <ImageView
@@ -52,53 +52,13 @@
                 android:layout_marginEnd="16dp"
                 android:fontFamily="@font/digitag"
                 android:text="@string/app_name"
-                android:textColor="@color/white"
+                android:textColor="@color/text_primary"
                 android:textSize="96sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:weightSum="2">
 
-                <Button
-                    android:id="@+id/bCapture"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="8dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#1F1F1F"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:text="Capture Image"
-                    app:cornerRadius="5dp"
-                    app:icon="@drawable/outline_camera_alt_24"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <Button
-                    android:id="@+id/bChooseFIle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="#1F1F1F"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:text="Choose File"
-                    app:cornerRadius="5dp"
-                    app:icon="@drawable/outline_upload_file_24"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/bCapture" />
-            </LinearLayout>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -121,7 +81,7 @@
                         android:layout_marginEnd="16dp"
                         android:fontFamily="sans-serif-black"
                         android:text="Tools"
-                        android:textColor="@color/white"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -164,7 +124,7 @@
                         android:layout_marginEnd="16dp"
                         android:fontFamily="sans-serif-black"
                         android:text="App Gallery"
-                        android:textColor="@color/white"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"

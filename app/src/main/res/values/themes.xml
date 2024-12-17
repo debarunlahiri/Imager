@@ -2,6 +2,23 @@
 <resources>
 
     <style name="Theme.Imager" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary Colors -->
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/accent_variant</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
 
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">@color/secondary_accent</item>
+        <item name="colorOnSecondary">@color/text_primary</item>
+
+        <!-- Background and Surface -->
+        <item name="android:windowBackground">@color/background_primary</item>
+        <item name="android:colorBackground">@color/background_primary</item>
+        <item name="colorSurface">@color/background_secondary</item>
+
+        <!-- Text Colors -->
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorOnSurface">@color/text_secondary</item>
     </style>
 </resources>

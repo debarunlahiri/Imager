@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#CC00FF</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Background Colors -->
+    <color name="background_primary">#121212</color> <!-- Main dark background -->
+    <color name="background_secondary">#1E1E1E</color> <!-- Slightly lighter for surfaces -->
 
-    <color name="neon">#CC00FF</color>
-    <color name="light_gray">#B0B0B0</color>
+    <!-- Text Colors -->
+    <color name="text_primary">#E0E0E0</color> <!-- Soft white text -->
+    <color name="text_secondary">#A3A3A3</color> <!-- Muted gray for secondary text -->
+
+    <!-- Accent Colors -->
+    <color name="accent">#8E99F3</color> <!-- Soft desaturated blue-purple accent -->
+    <color name="accent_variant">#5C6BC0</color> <!-- Muted darker blue-purple for contrast -->
+    <color name="secondary_accent">#90A4AE</color> <!-- Desaturated teal-gray for secondary elements -->
+
+    <!-- Additional Colors -->
+    <color name="error">#D32F2F</color> <!-- Subtle red for errors -->
+    <color name="divider">#282828</color> <!-- Divider or border colors -->
+    <color name="success">#388E3C</color> <!-- Muted green for success -->
 </resources>

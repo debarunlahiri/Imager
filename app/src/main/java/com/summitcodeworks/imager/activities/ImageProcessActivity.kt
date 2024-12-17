@@ -257,12 +257,12 @@ class ImageProcessActivity : AppCompatActivity() {
         val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {
-                binding.tbProcessImage.setTitleTextColor(ContextCompat.getColor(this, R.color.white))
-                tintNavigationIcon(navigationIcon, R.color.white)
+                binding.tbProcessImage.setTitleTextColor(ContextCompat.getColor(this, R.color.text_primary))
+                tintNavigationIcon(navigationIcon, R.color.text_primary)
             }
             Configuration.UI_MODE_NIGHT_YES -> {
-                binding.tbProcessImage.setTitleTextColor(ContextCompat.getColor(this, R.color.white))
-                tintNavigationIcon(navigationIcon, R.color.white)
+                binding.tbProcessImage.setTitleTextColor(ContextCompat.getColor(this, R.color.text_primary))
+                tintNavigationIcon(navigationIcon, R.color.text_primary)
             }
         }
     }

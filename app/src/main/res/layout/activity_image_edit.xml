@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="@color/background_primary"
     tools:context=".activities.ImageEditActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -36,7 +36,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="8dp"
                 app:srcCompat="@drawable/baseline_arrow_back_24"
-                app:tint="@color/white" />
+                app:tint="@color/text_primary" />
         </androidx.cardview.widget.CardView>
 
         <ImageButton
@@ -181,7 +181,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
-            android:backgroundTint="@color/neon"
+            android:backgroundTint="@color/background_secondary"
             android:text="Crop" />
 
         <Button
@@ -190,7 +190,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
-            android:backgroundTint="@color/neon"
+            android:backgroundTint="@color/background_secondary"
             android:text="Add Canvas" />
 
         <!-- Rotate Button -->
@@ -200,7 +200,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="2dp"
             android:layout_marginRight="2dp"
-            android:backgroundTint="@color/neon"
+            android:backgroundTint="@color/background_secondary"
             android:text="Rotate 90°" />
     </LinearLayout>
 

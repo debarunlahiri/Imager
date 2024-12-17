@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -16,6 +15,8 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.stfalcon.imageviewer.StfalconImageViewer
 import com.summitcodeworks.imager.adapters.GalleryAdapter
 import com.summitcodeworks.imager.R
 import com.summitcodeworks.imager.databinding.ActivityGalleryBinding
@@ -41,11 +42,6 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
 
         isFromGallery = intent.getBooleanExtra("isFromGallery", false)
 
-        if (isFromGallery) {
-            binding.bProcessImage.visibility = View.GONE
-        } else {
-            binding.bProcessImage.visibility = View.VISIBLE
-        }
 
         imageList = loadImagesFromPrivateFolder()
 
@@ -56,14 +52,6 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
         setupToolbar()
         checkPermissions()
         setupPagination()
-
-
-        binding.bProcessImage.setOnClickListener {
-            // Process the selected image
-            // For example, you can pass the selected image URI to another activity
-            // using an Intent
-
-        }
     }
 
     private fun setupToolbar() {
@@ -89,12 +77,12 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
         val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_NO -> {
-                binding.tbGallery.setTitleTextColor(ContextCompat.getColor(this, R.color.white))
-                tintNavigationIcon(navigationIcon, R.color.white)
+                binding.tbGallery.setTitleTextColor(ContextCompat.getColor(this, R.color.text_primary))
+                tintNavigationIcon(navigationIcon, R.color.text_primary)
             }
             Configuration.UI_MODE_NIGHT_YES -> {
-                binding.tbGallery.setTitleTextColor(ContextCompat.getColor(this, R.color.white))
-                tintNavigationIcon(navigationIcon, R.color.white)
+                binding.tbGallery.setTitleTextColor(ContextCompat.getColor(this, R.color.text_primary))
+                tintNavigationIcon(navigationIcon, R.color.text_primary)
             }
         }
     }
@@ -102,13 +90,12 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
     private fun loadImagesFromPrivateFolder(): MutableList<File> {
         val imageFiles = mutableListOf<File>()
         val imageFolder = getExternalFilesDir(null) // Replace with getFilesDir() for internal storage
-
         imageFolder?.listFiles()?.forEach { file ->
             if (file.isFile && isImageFile(file.name)) {
                 imageFiles.add(file)
             }
         }
-        return imageFiles
+        return imageFiles.asReversed().toMutableList()
     }
 
     private fun isImageFile(fileName: String): Boolean {
@@ -165,10 +152,14 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
         }
     }
 
-    override fun onGalleryClick(imageFile: File) {
-        val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
-        imagePreviewIntent.putExtra("imageFilePath", imageFile.absolutePath)
-        startActivity(imagePreviewIntent)
+    override fun onGalleryClick(imageFile: File, position: Int) {
+//        val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
+//        imagePreviewIntent.putExtra("imageFilePath", imageFile.absolutePath)
+//        startActivity(imagePreviewIntent)
+
+        StfalconImageViewer.Builder(mContext, imageList) { view, image ->
+            Glide.with(mContext).load(image).into(view)
+        }.withStartPosition(position).show()
     }
 
     override fun onGalleryDelete(imageFile: File) {

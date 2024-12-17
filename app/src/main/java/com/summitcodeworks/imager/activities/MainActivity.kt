@@ -13,10 +13,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
+import com.bumptech.glide.Glide
+import com.stfalcon.imageviewer.StfalconImageViewer
+import com.stfalcon.imageviewer.listeners.OnImageChangeListener
 import com.summitcodeworks.imager.R
 import com.summitcodeworks.imager.adapters.GalleryAdapter
 import com.summitcodeworks.imager.adapters.ToolsAdapter
-import com.summitcodeworks.imager.apiClient.RetrofitClient
 import com.summitcodeworks.imager.databinding.ActivityMainBinding
 import com.summitcodeworks.imager.models.ToolsData
 import com.summitcodeworks.imager.utils.CommonUtils
@@ -91,16 +93,16 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         initTools()
 
 
-        binding.bCapture.setOnClickListener {
-            val cameraIntent = Intent(this, CameraActivity::class.java)
-            startActivity(cameraIntent)
-        }
-
-        binding.bChooseFIle.setOnClickListener {
-            Toast.makeText(this, "Select only one image", Toast.LENGTH_SHORT).show()
-            pickImages.launch("image/*")
-
-        }
+//        binding.bCapture.setOnClickListener {
+//            val cameraIntent = Intent(this, CameraActivity::class.java)
+//            startActivity(cameraIntent)
+//        }
+//
+//        binding.bChooseFIle.setOnClickListener {
+//            Toast.makeText(this, "Select only one image", Toast.LENGTH_SHORT).show()
+//            pickImages.launch("image/*")
+//
+//        }
 
         binding.cvMainGallery.setOnClickListener {
             val galleryIntent = Intent(this, GalleryActivity::class.java)
@@ -118,6 +120,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         toolsDataList.add(ToolsData("meme_maker", "Meme Maker", R.drawable.ic_smile))
         toolsDataList.add(ToolsData("image_generator", "Image Generator", R.drawable.ic_text_to_image))
         toolsDataList.add(ToolsData("scan_document", "Scan Document", R.drawable.ic_scanner))
+        toolsDataList.add(ToolsData("pdf_to_image", "PDF to Image", R.drawable.ic_pdf))
     }
 
     private fun initTools() {
@@ -127,6 +130,9 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
     }
 
     private fun initGallery() {
+        if (::imageList.isInitialized) {
+            imageList.clear()
+        }
         imageList = loadImagesFromPrivateFolder()
         if (imageList.size == 0) {
             binding.llMainNoMedia.visibility = View.VISIBLE
@@ -138,6 +144,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         galleryAdapter = GalleryAdapter(imageList, mContext, this)
         binding.rvMainGallery.adapter = galleryAdapter
         binding.rvMainGallery.layoutManager = GridLayoutManager(this, 3)
+        galleryAdapter.notifyDataSetChanged()
     }
 
     private fun loadImagesFromPrivateFolder(): MutableList<File> {
@@ -163,10 +170,19 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
         return extensions.any { fileName.endsWith(it, ignoreCase = true) }
     }
 
-    override fun onGalleryClick(imageFile: File) {
-        val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
-        imagePreviewIntent.putExtra("imageFilePath", imageFile.absolutePath)
-        startActivity(imagePreviewIntent)
+    override fun onGalleryClick(imageFile: File, position: Int) {
+//        val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
+//        imagePreviewIntent.putExtra("imageFilePath", imageFile.absolutePath)
+//        startActivity(imagePreviewIntent)
+
+        StfalconImageViewer.Builder(mContext, imageList) { view, image ->
+            Glide.with(mContext).load(image).into(view)
+        }.withStartPosition(position).withHiddenStatusBar(false).withImageChangeListener(object : OnImageChangeListener {
+            override fun onImageChange(position: Int) {
+
+            }
+
+        }).show()
     }
 
     override fun onGalleryDelete(imageFile: File) {
@@ -177,7 +193,8 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
                 if (isDeleted) {
                     imageList.remove(imageFile)
                     galleryAdapter.notifyItemRemoved(imageList.indexOf(imageFile))
-                    Toast.makeText(mContext, "Image deleted successfully.", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(mContext, "Image deleted successfully.", Toast.LENGTH_SHORT).show()
+                    initGallery()
                 } else {
                     Toast.makeText(mContext, "Failed to delete the image.", Toast.LENGTH_SHORT).show()
                 }

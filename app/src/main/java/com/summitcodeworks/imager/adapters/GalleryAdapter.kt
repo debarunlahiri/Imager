@@ -1,7 +1,6 @@
 package com.summitcodeworks.imager.adapters
 
 import android.content.Context
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -29,7 +28,7 @@ class GalleryAdapter(val imageUris: List<File>, val mContext: Context, val onGal
             .load(imageUri)
             .into(holder.binding.ivRedStrip)
         holder.binding.flRedStrip.setOnClickListener {
-            onGalleryListener.onGalleryClick(imageUri)
+            onGalleryListener.onGalleryClick(imageUri, position)
         }
 
         holder.binding.ibImageDelete.setOnClickListener {
@@ -39,7 +38,7 @@ class GalleryAdapter(val imageUris: List<File>, val mContext: Context, val onGal
     }
 
     interface OnGalleryListener {
-        fun onGalleryClick(imageUri: File)
+        fun onGalleryClick(imageUri: File, position: Int)
         fun onGalleryDelete(imageUri: File)
     }
 }

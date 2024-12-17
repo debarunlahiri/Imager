@@ -1,6 +1,8 @@
 package com.summitcodeworks.imager.activities
 
 import android.Manifest
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,6 +11,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -30,6 +34,7 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
     private lateinit var cameraExecutor: ExecutorService
     private var imageCapture: ImageCapture? = null
+    private var isProcessing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,9 +49,7 @@ class CameraActivity : AppCompatActivity() {
             )
         }
 
-        binding.ibCapture.setOnClickListener {
-            takePhoto()
-        }
+        setupCaptureButton()
 
         // Add close/cancel button
         binding.ibClose.setOnClickListener {
@@ -55,6 +58,53 @@ class CameraActivity : AppCompatActivity() {
         }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+    }
+
+    private fun setupCaptureButton() {
+        // Hide progress indicator initially
+        binding.progressIndicator.visibility = View.GONE
+
+        binding.ibCapture.setOnClickListener {
+            if (!isProcessing) {
+                animateCaptureButton()
+                takePhoto()
+            }
+        }
+    }
+
+    private fun animateCaptureButton() {
+        // Scale down animation
+        val scaleDownX = ObjectAnimator.ofFloat(binding.ibCapture, View.SCALE_X, 1f, 0.85f)
+        val scaleDownY = ObjectAnimator.ofFloat(binding.ibCapture, View.SCALE_Y, 1f, 0.85f)
+
+        // Scale up animation
+        val scaleUpX = ObjectAnimator.ofFloat(binding.ibCapture, View.SCALE_X, 0.85f, 1f)
+        val scaleUpY = ObjectAnimator.ofFloat(binding.ibCapture, View.SCALE_Y, 0.85f, 1f)
+
+        // Combine animations
+        val scaleDown = AnimatorSet().apply {
+            playTogether(scaleDownX, scaleDownY)
+            duration = 100
+            interpolator = AccelerateDecelerateInterpolator()
+        }
+
+        val scaleUp = AnimatorSet().apply {
+            playTogether(scaleUpX, scaleUpY)
+            duration = 100
+            interpolator = AccelerateDecelerateInterpolator()
+        }
+
+        AnimatorSet().apply {
+            playSequentially(scaleDown, scaleUp)
+            start()
+        }
+    }
+
+    private fun showProcessingState(show: Boolean) {
+        isProcessing = show
+        binding.progressIndicator.visibility = if (show) View.VISIBLE else View.GONE
+        binding.ibCapture.isEnabled = !show
+        binding.ibCapture.alpha = if (show) 0.5f else 1.0f
     }
 
     private fun startCamera() {
@@ -91,10 +141,10 @@ class CameraActivity : AppCompatActivity() {
 
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
+        showProcessingState(true)
 
-        // Create output file
         val photoFile = File(
-            getExternalFilesDir(null), // Use cache directory instead of external storage
+            getExternalFilesDir(null),
             "captured_image_${SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                 .format(System.currentTimeMillis())}.jpg"
         )
@@ -113,15 +163,14 @@ class CameraActivity : AppCompatActivity() {
                         photoFile
                     )
 
-                    // Fix rotation
                     val fixedBitmap = fixImageRotation(photoFile)
 
-                    // Save the corrected bitmap back to the file
                     FileOutputStream(photoFile).use { out ->
                         fixedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
                     }
 
-                    // Return the result to calling activity
+                    showProcessingState(false)
+
                     val resultIntent = Intent().apply {
                         putExtra(EXTRA_IMAGE_URI, imageUri.toString())
                         putExtra(EXTRA_IMAGE_PATH, photoFile.absolutePath)
@@ -129,7 +178,9 @@ class CameraActivity : AppCompatActivity() {
                     setResult(Activity.RESULT_OK, resultIntent)
                     finish()
                 }
+
                 override fun onError(exception: ImageCaptureException) {
+                    showProcessingState(false)
                     Log.e(TAG, "Photo capture failed: ${exception.message}", exception)
                     Toast.makeText(
                         this@CameraActivity,

@@ -23,6 +23,7 @@ import com.summitcodeworks.imager.utils.CropView
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import org.opencv.photo.Photo
 
 class DocumentScanActivity : AppCompatActivity() {
 
@@ -30,6 +31,9 @@ class DocumentScanActivity : AppCompatActivity() {
     private lateinit var mContext: Context
     private lateinit var originalBitmap: Bitmap
     private val corners = mutableListOf<Point>()
+
+    private val MIN_DOCUMENT_AREA_PERCENT = 0.10 // Reduced from 0.15
+    private val MAX_DOCUMENT_AREA_PERCENT = 0.98 // Increased from 0.95
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,61 +153,218 @@ class DocumentScanActivity : AppCompatActivity() {
         // Convert to BGR for OpenCV processing
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGR)
 
-        val grayMat = Mat()
-        Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_BGR2GRAY)
-        Imgproc.GaussianBlur(grayMat, grayMat, Size(5.0, 5.0), 0.0)
+        // Enhanced pre-processing
+        val processed = preprocessImage(mat)
 
-        val edges = Mat()
-        // Adjusted threshold values for better edge detection
-        Imgproc.Canny(grayMat, edges, 50.0, 150.0)
+        // Find document corners
+        val documentCorners = findDocumentCorners(processed)
 
-        // Dilate edges to connect broken lines
-        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(3.0, 3.0))
-        Imgproc.dilate(edges, edges, kernel)
+        if (documentCorners != null) {
+            corners.clear()
+            corners.addAll(documentCorners)
 
-        val contours = mutableListOf<MatOfPoint>()
-        val hierarchy = Mat()
-        Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
+            // Apply perspective transform
+            val transformedBitmap = perspectiveTransform()
+            originalBitmap = transformedBitmap
+            binding.imageView.setImageBitmap(transformedBitmap)
 
-        // Sort contours by area in descending order
-        val sortedContours = contours.sortedByDescending { Imgproc.contourArea(it) }
-
-        var documentDetected = false
-
-        for (contour in sortedContours) {
-            val area = Imgproc.contourArea(contour)
-            // Check if contour is large enough (adjust threshold as needed)
-            if (area < 0.05 * mat.width() * mat.height()) continue
-
-            val approx = MatOfPoint2f()
-            val peri = Imgproc.arcLength(MatOfPoint2f(*contour.toArray()), true)
-            Imgproc.approxPolyDP(MatOfPoint2f(*contour.toArray()), approx, 0.02 * peri, true)
-
-            if (approx.total() == 4L) {
-                corners.clear()
-                corners.addAll(approx.toList())
-                drawCorners(mat)
-                documentDetected = true
-
-                // Apply perspective transform
-                val transformedBitmap = perspectiveTransform()
-                originalBitmap = transformedBitmap
-                binding.imageView.setImageBitmap(transformedBitmap)
-
-                Toast.makeText(this, "Document detected", Toast.LENGTH_SHORT).show()
-                break
-            }
-        }
-
-        if (!documentDetected) {
+            Toast.makeText(this, "Document detected", Toast.LENGTH_SHORT).show()
+        } else {
             Toast.makeText(this, "No document detected", Toast.LENGTH_SHORT).show()
             binding.imageView.setImageBitmap(bitmap)
         }
 
         mat.release()
-        grayMat.release()
-        edges.release()
+        processed.release()
+    }
+
+    private fun preprocessImage(input: Mat): Mat {
+        val result = Mat()
+
+        // Convert to grayscale
+        Imgproc.cvtColor(input, result, Imgproc.COLOR_BGR2GRAY)
+
+        // Increase contrast
+        Core.normalize(result, result, 0.0, 255.0, Core.NORM_MINMAX)
+
+        // Apply bilateral filter with adjusted parameters
+        Photo.fastNlMeansDenoising(result, result, 10f)
+
+        // Use less aggressive CLAHE
+        val clahe = Imgproc.createCLAHE(2.0, Size(8.0, 8.0))
+        clahe.apply(result, result)
+
+        // Lighter Gaussian blur
+        Imgproc.GaussianBlur(result, result, Size(3.0, 3.0), 1.0)
+
+        // Remove adaptive thresholding as it might be too aggressive
+        // Instead, use a simple threshold with Otsu's method
+        Imgproc.threshold(result, result, 0.0, 255.0, Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU)
+
+        return result
+    }
+
+    private fun findDocumentCorners(processed: Mat): List<Point>? {
+        val edges = Mat()
+        val hierarchy = Mat()
+
+        // Multi-scale edge detection
+        val edgesMat = detectEdgesMultiScale(processed)
+
+        // Find contours
+        val contours = mutableListOf<MatOfPoint>()
+        Imgproc.findContours(
+            edgesMat,
+            contours,
+            hierarchy,
+            Imgproc.RETR_EXTERNAL,
+            Imgproc.CHAIN_APPROX_SIMPLE
+        )
+
+        // Sort contours by area in descending order
+        val sortedContours = contours
+            .filter { validateContourArea(it, processed.size()) }
+            .sortedByDescending { Imgproc.contourArea(it) }
+
+        for (contour in sortedContours) {
+            val approx = approximatePolygon(contour)
+
+            if (approx.total() == 4L && isValidQuadrilateral(approx)) {
+                val points = approx.toList()
+                hierarchy.release()
+                edges.release()
+                edgesMat.release()
+                return points
+            }
+        }
+
         hierarchy.release()
+        edges.release()
+        edgesMat.release()
+        return null
+    }
+
+    private fun detectEdgesMultiScale(gray: Mat): Mat {
+        val edges = Mat()
+        val edgesTemp = Mat()
+
+        // Add more scales for better detection
+        val scales = listOf(1.0, 0.75, 0.5, 0.25)
+
+        for (scale in scales) {
+            val scaled = Mat()
+            val size = Size(gray.width() * scale, gray.height() * scale)
+            Imgproc.resize(gray, scaled, size)
+
+            // Adjust Canny parameters
+            val sigma = 0.33
+            val median = calculateMedian(scaled)
+            // Lower thresholds for more sensitive edge detection
+            val lower = (median * (1.0 - sigma)).coerceAtLeast(0.0) * 0.5 // Reduced threshold
+            val upper = (median * (1.0 + sigma)).coerceAtMost(255.0)
+
+            Imgproc.Canny(scaled, edgesTemp, lower, upper)
+
+            if (scale != 1.0) {
+                Imgproc.resize(edgesTemp, edgesTemp, gray.size())
+            }
+
+            if (edges.empty()) {
+                edgesTemp.copyTo(edges)
+            } else {
+                Core.bitwise_or(edges, edgesTemp, edges)
+            }
+
+            scaled.release()
+        }
+
+        // More aggressive edge enhancement
+        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(5.0, 5.0))
+        Imgproc.dilate(edges, edges, kernel)
+        Imgproc.erode(edges, edges, kernel)
+
+        edgesTemp.release()
+        return edges
+    }
+
+    private fun calculateMedian(mat: Mat): Double {
+        val values = MatOfDouble()
+        Core.meanStdDev(mat, values, MatOfDouble())
+        return values.get(0, 0)[0]
+    }
+
+    private fun validateContourArea(contour: MatOfPoint, imageSize: Size): Boolean {
+        val area = Imgproc.contourArea(contour)
+        val imageArea = imageSize.area()
+        val areaRatio = area / imageArea
+
+        return areaRatio in MIN_DOCUMENT_AREA_PERCENT..MAX_DOCUMENT_AREA_PERCENT
+    }
+
+    private fun approximatePolygon(contour: MatOfPoint): MatOfPoint2f {
+        val contour2f = MatOfPoint2f(*contour.toArray())
+        val approx = MatOfPoint2f()
+        // Increase epsilon for more lenient approximation
+        val epsilon = 0.03 * Imgproc.arcLength(contour2f, true)  // Increased from 0.02
+        Imgproc.approxPolyDP(contour2f, approx, epsilon, true)
+        return approx
+    }
+
+    private fun isValidQuadrilateral(points: MatOfPoint2f): Boolean {
+        if (points.total() != 4L) return false
+
+        val vertices = points.toList()
+
+        // Reduce minimum angle requirement
+        val minAngle = calculateMinimumAngle(vertices)
+        if (minAngle < 30.0) return false  // Reduced from 45.0
+
+        // More lenient aspect ratio
+        val aspectRatio = calculateAspectRatio(vertices)
+        if (aspectRatio < 0.1 || aspectRatio > 10.0) return false  // Widened from 0.2-5.0
+
+        return true
+    }
+
+    private fun calculateMinimumAngle(points: List<Point>): Double {
+        var minAngle = 180.0
+
+        for (i in points.indices) {
+            val p1 = points[i]
+            val p2 = points[(i + 1) % 4]
+            val p3 = points[(i + 2) % 4]
+
+            val angle = calculateAngle(p1, p2, p3)
+            minAngle = minOf(minAngle, angle)
+        }
+
+        return minAngle
+    }
+
+    private fun calculateAngle(p1: Point, p2: Point, p3: Point): Double {
+        val v1x = p1.x - p2.x
+        val v1y = p1.y - p2.y
+        val v2x = p3.x - p2.x
+        val v2y = p3.y - p2.y
+
+        val dot = v1x * v2x + v1y * v2y
+        val cross = v1x * v2y - v1y * v2x
+
+        return Math.toDegrees(Math.atan2(Math.abs(cross), dot))
+    }
+
+    private fun calculateAspectRatio(points: List<Point>): Double {
+        val width = maxOf(
+            distance(points[0], points[1]),
+            distance(points[2], points[3])
+        )
+
+        val height = maxOf(
+            distance(points[0], points[3]),
+            distance(points[1], points[2])
+        )
+
+        return width / height
     }
 
     private fun drawCorners(mat: Mat) {

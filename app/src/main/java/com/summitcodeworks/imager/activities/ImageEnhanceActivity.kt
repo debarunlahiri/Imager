@@ -1,9 +1,11 @@
 package com.summitcodeworks.imager.activities
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -13,13 +15,15 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.summitcodeworks.imager.R
 import com.summitcodeworks.imager.databinding.ActivityImageEnhanceBinding
+import com.summitcodeworks.imager.fragments.SelectImageBottomDialogFragment
+import com.summitcodeworks.imager.utils.CommonUtils
 import com.summitcodeworks.imager.utils.ImageProcessor
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import java.io.File
 import java.io.FileOutputStream
 
-class ImageEnhanceActivity : AppCompatActivity() {
+class ImageEnhanceActivity : AppCompatActivity(), SelectImageBottomDialogFragment.OnSelectImageListener {
 
     private lateinit var binding: ActivityImageEnhanceBinding
 
@@ -35,7 +39,7 @@ class ImageEnhanceActivity : AppCompatActivity() {
             uri?.let {
                 val inputStream = contentResolver.openInputStream(it)
                 originalBitmap = BitmapFactory.decodeStream(inputStream)
-                binding.imageView.setImageBitmap(originalBitmap)
+                handleImage(originalBitmap!!)
             }
         }
     }
@@ -52,8 +56,10 @@ class ImageEnhanceActivity : AppCompatActivity() {
 
         mContext = this
 
+        showSelectImageDialog()
+
         binding.loadImageButton.setOnClickListener {
-            pickImage()
+            showSelectImageDialog()
         }
 
         binding.enhanceButton.setOnClickListener {
@@ -90,6 +96,11 @@ class ImageEnhanceActivity : AppCompatActivity() {
                 Toast.makeText(this, "Save the image first", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun showSelectImageDialog() {
+        val selectImageBottomDialogFragment = SelectImageBottomDialogFragment.newInstance("", "")
+        selectImageBottomDialogFragment.show(supportFragmentManager, "select_image_bottom_dialog")
     }
 
     private fun pickImage() {
@@ -152,6 +163,46 @@ class ImageEnhanceActivity : AppCompatActivity() {
         }
 
         startActivity(Intent.createChooser(shareIntent, "Share image via"))
+    }
+
+    override fun onCameraClick() {
+        launchCamera()
+    }
+
+    override fun onGalleryClick() {
+        pickImage()
+    }
+
+    override fun onDialogDismiss() {
+        finish()
+    }
+
+    private fun launchCamera() {
+        val intent = Intent(this, CameraActivity::class.java)
+        cameraLauncher.launch(intent)
+    }
+
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val imageUri = result.data?.getStringExtra(CameraActivity.EXTRA_IMAGE_URI)
+
+            if (imageUri != null) {
+                val uri = Uri.parse(imageUri)
+                originalBitmap = CommonUtils.convertUriToBitmap(this, uri)!!
+                binding.imageView.setImageURI(uri)
+                handleImage(originalBitmap!!)
+            } else {
+                Toast.makeText(this, "Failed to get image URI", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "Image capture cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun handleImage(originalBitmap: Bitmap) {
+        binding.imageView.setImageBitmap(originalBitmap)
     }
 
 
