@@ -25,7 +25,7 @@ import com.summitcodeworks.imager.utils.CommonUtils
 import org.opencv.android.OpenCVLoader
 import java.io.File
 
-class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, ToolsAdapter.OnToolsAdapterListener {
+class MainActivity : AppCompatActivity(), ToolsAdapter.OnToolsAdapterListener {
 
     private lateinit var binding: ActivityMainBinding
 
@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
             binding.llMainNoMedia.visibility = View.GONE
             binding.rvMainGallery.visibility = View.VISIBLE
         }
-        galleryAdapter = GalleryAdapter(imageList, mContext, this)
+        galleryAdapter = GalleryAdapter(imageList, mContext, supportFragmentManager)
         binding.rvMainGallery.adapter = galleryAdapter
         binding.rvMainGallery.layoutManager = GridLayoutManager(this, 3)
         galleryAdapter.notifyDataSetChanged()
@@ -168,42 +168,6 @@ class MainActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener, Tool
     private fun isImageFile(fileName: String): Boolean {
         val extensions = listOf("jpg", "jpeg", "png", "gif", "bmp")
         return extensions.any { fileName.endsWith(it, ignoreCase = true) }
-    }
-
-    override fun onGalleryClick(imageFile: File, position: Int) {
-//        val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
-//        imagePreviewIntent.putExtra("imageFilePath", imageFile.absolutePath)
-//        startActivity(imagePreviewIntent)
-
-        StfalconImageViewer.Builder(mContext, imageList) { view, image ->
-            Glide.with(mContext).load(image).into(view)
-        }.withStartPosition(position).withHiddenStatusBar(false).withImageChangeListener(object : OnImageChangeListener {
-            override fun onImageChange(position: Int) {
-
-            }
-
-        }).show()
-    }
-
-    override fun onGalleryDelete(imageFile: File) {
-        try {
-            val file = imageFile
-            if (file.exists()) {
-                val isDeleted = file.delete()
-                if (isDeleted) {
-                    imageList.remove(imageFile)
-                    galleryAdapter.notifyItemRemoved(imageList.indexOf(imageFile))
-//                    Toast.makeText(mContext, "Image deleted successfully.", Toast.LENGTH_SHORT).show()
-                    initGallery()
-                } else {
-                    Toast.makeText(mContext, "Failed to delete the image.", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(mContext, "File does not exist.", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 
     override fun onToolsAdapterClick(toolsData: ToolsData) {

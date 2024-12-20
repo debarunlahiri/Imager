@@ -1,11 +1,6 @@
 package com.summitcodeworks.imager.fragments
 
 import android.content.Context
-import android.content.Intent
-import android.graphics.Color
-import android.graphics.RectF
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RoundRectShape
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,8 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.summitcodeworks.imager.R
-import com.summitcodeworks.imager.activities.CameraActivity
-import com.summitcodeworks.imager.databinding.FragmentSelectImageBottomDialogBinding
+import com.summitcodeworks.imager.databinding.FragmentImageActionsBottomDialogBinding
+import java.io.File
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -23,19 +18,19 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [SelectImageBottomDialogFragment.newInstance] factory method to
+ * Use the [ImageActionsBottomDialogFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class SelectImageBottomDialogFragment : BottomSheetDialogFragment() {
+class ImageActionsBottomDialogFragment : BottomSheetDialogFragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
-    private lateinit var binding: FragmentSelectImageBottomDialogBinding
+    private lateinit var binding: FragmentImageActionsBottomDialogBinding
 
     private lateinit var mContext: Context
 
-    private lateinit var onSelectImageListener: OnSelectImageListener
+    private var onImageActionsBottomDialogListener: OnImageActionsBottomDialogListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +44,8 @@ class SelectImageBottomDialogFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentSelectImageBottomDialogBinding.inflate(inflater, container, false)
+        // Inflate the layout for this fragment
+        binding = FragmentImageActionsBottomDialogBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -57,30 +53,25 @@ class SelectImageBottomDialogFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         mContext = requireContext()
-        onSelectImageListener = mContext as OnSelectImageListener
 
-        view.setBackgroundResource(R.drawable.rounded_bottom_sheet)
+        onImageActionsBottomDialogListener = mContext as OnImageActionsBottomDialogListener
 
-        binding.bCapture.setOnClickListener {
-            onSelectImageListener.onCameraClick()
+        binding.bDeleteImage.setOnClickListener {
+            onImageActionsBottomDialogListener?.onImageDelete(File(param1!!))
             dismiss()
         }
 
-        binding.bChooseFIle.setOnClickListener {
-            onSelectImageListener.onGalleryClick()
-            dismiss()
-        }
-
-        binding.ibDialogSelectImageCancel.setOnClickListener {
-            onSelectImageListener.onDialogDismiss()
+        binding.bShareImage.setOnClickListener {
+            onImageActionsBottomDialogListener?.onImageShare(File(param1!!))
             dismiss()
         }
     }
 
-    interface OnSelectImageListener {
-        fun onCameraClick()
-        fun onGalleryClick()
-        fun onDialogDismiss()
+    interface OnImageActionsBottomDialogListener {
+        fun onImageDelete(imageFile: File)
+        fun onImageEdit()
+        fun onImageShare(imageFile: File)
+        fun onImageDownload()
     }
 
     companion object {
@@ -90,12 +81,12 @@ class SelectImageBottomDialogFragment : BottomSheetDialogFragment() {
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
-         * @return A new instance of fragment SelectImageBottomDialogFragment.
+         * @return A new instance of fragment ImageActionsBottomDialogFragment.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            SelectImageBottomDialogFragment().apply {
+            ImageActionsBottomDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)

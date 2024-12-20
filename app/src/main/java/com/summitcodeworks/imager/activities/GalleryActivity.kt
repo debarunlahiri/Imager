@@ -20,9 +20,10 @@ import com.stfalcon.imageviewer.StfalconImageViewer
 import com.summitcodeworks.imager.adapters.GalleryAdapter
 import com.summitcodeworks.imager.R
 import com.summitcodeworks.imager.databinding.ActivityGalleryBinding
+import com.summitcodeworks.imager.fragments.ImageActionsBottomDialogFragment
 import java.io.File
 
-class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
+class GalleryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityGalleryBinding
     private lateinit var mContext: Context
@@ -45,7 +46,7 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
 
         imageList = loadImagesFromPrivateFolder()
 
-        galleryAdapter = GalleryAdapter(imageList, mContext, this)
+        galleryAdapter = GalleryAdapter(imageList, mContext, supportFragmentManager)
         binding.rvGallery.adapter = galleryAdapter
         binding.rvGallery.layoutManager = GridLayoutManager(this, 3)
 
@@ -152,37 +153,6 @@ class GalleryActivity : AppCompatActivity(), GalleryAdapter.OnGalleryListener {
         }
     }
 
-    override fun onGalleryClick(imageFile: File, position: Int) {
-//        val imagePreviewIntent = Intent(mContext, ImagePreviewActivity::class.java)
-//        imagePreviewIntent.putExtra("imageFilePath", imageFile.absolutePath)
-//        startActivity(imagePreviewIntent)
 
-        StfalconImageViewer.Builder(mContext, imageList) { view, image ->
-            Glide.with(mContext).load(image).into(view)
-        }.withStartPosition(position).show()
-    }
-
-    override fun onGalleryDelete(imageFile: File) {
-        try {
-            // Convert Uri to File
-            val file = imageFile
-            // Check if file exists and delete it
-            if (file.exists()) {
-                val isDeleted = file.delete()
-                if (isDeleted) {
-                    // If successfully deleted, remove it from the list
-                    imageList.remove(imageFile)
-                    galleryAdapter.notifyItemRemoved(imageList.indexOf(imageFile))
-                    Toast.makeText(mContext, "Image deleted successfully.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(mContext, "Failed to delete the image.", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(mContext, "File does not exist.", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
 }
